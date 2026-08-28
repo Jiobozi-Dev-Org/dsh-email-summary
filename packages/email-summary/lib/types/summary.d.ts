@@ -6,10 +6,9 @@
 import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm';
 import type { SessionEvent } from '@deepseek-ai/dsh-session/types';
 import type { EmailSummaryStyle } from './types.ts';
-/** Extracted transcript plus the first human message (a subject fallback). */
+/** Extracted conversation transcript. */
 export interface Transcript {
     text: string;
-    firstUser: string;
 }
 /**
  * Fold surface events into a readable `User:` / `Assistant:` transcript,

@@ -8,6 +8,10 @@
     "url": "git+https://github.com/Jiobozi-Dev-Org/dsh-email-summary.git",
     "directory": "packages/ui-email-summary"
   },
+  "homepage": "https://github.com/Jiobozi-Dev-Org/dsh-email-summary#readme",
+  "bugs": {
+    "url": "https://github.com/Jiobozi-Dev-Org/dsh-email-summary/issues"
+  },
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",

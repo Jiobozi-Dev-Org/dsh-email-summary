@@ -19,10 +19,9 @@ function textOfBlocks(blocks: readonly ContentBlock[]): string {
   return out
 }
 
-/** Extracted transcript plus the first human message (a subject fallback). */
+/** Extracted conversation transcript. */
 export interface Transcript {
   text: string
-  firstUser: string
 }
 
 /**
@@ -31,7 +30,6 @@ export interface Transcript {
  */
 export function buildTranscript(events: readonly SessionEvent[]): Transcript {
   const lines: string[] = []
-  let firstUser = ''
   for (const event of events) {
     const message = deriveEventMessage(event)
     if (message == null) continue
@@ -40,14 +38,13 @@ export function buildTranscript(events: readonly SessionEvent[]): Transcript {
       if (kind !== undefined && kind !== 'user') continue
       const text = textOfBlocks(message.content)
       if (text === '') continue
-      if (firstUser === '') firstUser = text
       lines.push(`User: ${text}`)
     } else if (message.role === 'assistant') {
       const text = textOfBlocks(message.content)
       if (text !== '') lines.push(`Assistant: ${text}`)
     }
   }
-  return { text: lines.join('\n\n'), firstUser }
+  return { text: lines.join('\n\n') }
 }
 
 /** Cap a transcript to `max` chars, keeping the head and tail. */

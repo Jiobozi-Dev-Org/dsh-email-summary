@@ -20,7 +20,6 @@ function textOfBlocks(blocks) {
  */
 export function buildTranscript(events) {
     const lines = [];
-    let firstUser = '';
     for (const event of events) {
         const message = deriveEventMessage(event);
         if (message == null)
@@ -32,8 +31,6 @@ export function buildTranscript(events) {
             const text = textOfBlocks(message.content);
             if (text === '')
                 continue;
-            if (firstUser === '')
-                firstUser = text;
             lines.push(`User: ${text}`);
         }
         else if (message.role === 'assistant') {
@@ -42,7 +39,7 @@ export function buildTranscript(events) {
                 lines.push(`Assistant: ${text}`);
         }
     }
-    return { text: lines.join('\n\n'), firstUser };
+    return { text: lines.join('\n\n') };
 }
 /** Cap a transcript to `max` chars, keeping the head and tail. */
 export function capTranscript(text, max) {
