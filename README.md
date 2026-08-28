@@ -1,114 +1,116 @@
 # dsh-email-summary
 
-一个 **DeepSeek Harness（DSH）插件**：把当前对话总结成一份**排版精美的 HTML 邮件**，通过 SMTP 发送到指定邮箱。标题自动带日期前缀，例如：
+A **DeepSeek Harness (DSH) plugin** that summarizes the current conversation into a beautifully styled **HTML email** and sends it over SMTP. The subject is automatically prefixed with the date, for example:
 
-> `26年8月26日 dsh开发笔记：Web 插件打包方案总结`
+> `26年8月26日 dsh开发笔记：Web plugin packaging summary`
 
-## ✨ 功能
+> 中文文档见 [README.zh-CN.md](./README.zh-CN.md)
 
-- **带样式的 HTML 正文**：蓝色渐变标题栏 + 白底正文卡片，分节标题、列表、加粗、行内代码等样式（全部内联 CSS，兼容邮件客户端），不再是 Markdown 纯文本。
-- **标题自动生成**：`日期 + dsh开发笔记：` 前缀，后面是 LLM 从对话里提炼的简短标题。
-- **常用邮箱预设**：Gmail / QQ / 163 / 126 / Outlook / 自定义，选预设自动填好主机、端口、加密方式。
-- **两种发送方式**：
-  - 助手消息上的「**发送邮件**」按钮，一键总结并发送当前会话；
-  - 输入区的「**结束后发送**」开关，对话结束（agent 转 idle）时自动总结并发送到默认收件人。
-- **密码走凭证**：SMTP 密码存到凭证存储（环境变量 `EMAIL_SMTP_PASSWORD`），不落明文进设置。
-- **代理支持**：自动读取 `HTTPS_PROXY`/`HTTP_PROXY`/`ALL_PROXY` 环境变量或 Windows 系统代理，支持 HTTP CONNECT 与 SOCKS5 隧道（可访问被墙的 SMTP）。
-- **零依赖 SMTP 客户端**：`node:net`/`node:tls` 实现，支持 465 隐式 SSL / 587 STARTTLS / 25 无加密，AUTH PLAIN，UTF-8 正文。
+## ✨ Features
 
-## 📦 安装
+- **Styled HTML body**: gradient title bar + white content card, with section headings, lists, bold, and inline-code styling (all inline CSS, email-client friendly) — no more plain Markdown.
+- **Auto-generated subject**: `date + dsh开发笔记：` prefix, followed by a short title the LLM extracts from the conversation.
+- **Provider presets**: Gmail / QQ / 163 / 126 / Outlook / Custom. Selecting a preset fills host, port, and encryption automatically.
+- **Two send modes**:
+  - a **"Send email"** button on assistant messages — one click summarizes and sends the current conversation;
+  - an **"Send when done"** toggle in the composer — automatically summarizes and sends to the default recipient when the conversation ends (agent goes idle).
+- **Credential-backed password**: the SMTP password is stored as a credential (`EMAIL_SMTP_PASSWORD` env var), never in plaintext settings.
+- **Proxy support**: reads `HTTPS_PROXY` / `HTTP_PROXY` / `ALL_PROXY` env vars or the Windows system proxy; supports HTTP `CONNECT` and SOCKS5 tunnels (for reaching blocked SMTP hosts).
+- **Dependency-free SMTP client**: implemented on `node:net` / `node:tls`; supports 465 implicit SSL / 587 STARTTLS / 25 plain, AUTH PLAIN, UTF-8 bodies.
 
-本插件包含两个包（Host + Client），都发布在 npm：
+## 📦 Installation
+
+This plugin ships as two packages (Host + Client), both published to npm:
 
 ```sh
 npm install @jiobozi-dev-org/dsh-email-summary
 npm install @jiobozi-dev-org/dsh-client-ui-email-summary
 ```
 
-若使用 DSH 的插件安装命令：
+Or with the DSH plugin installer:
 
 ```sh
 dsh plugin add @jiobozi-dev-org/dsh-email-summary
 dsh plugin add @jiobozi-dev-org/dsh-client-ui-email-summary
 ```
 
-## 🔧 组合（cordis.yml）
+## 🔧 Composition (cordis.yml)
 
-在部署的 host 组合里加入 host 行，在 client 组合里加入 client 行：
+Add the Host row to the host composition and the Client row to the client composition:
 
 ```yaml
-# host 组合
+# host composition
 - id: email-summary
   name: '@jiobozi-dev-org/dsh-email-summary'
 
-# client 组合
+# client composition
 - id: ui-email-summary
   name: '@jiobozi-dev-org/dsh-client-ui-email-summary'
 ```
 
-（`dsh.client` 声明已在 client 包的 `package.json` 里，host 的模块扫描会自动发现客户端 bundle。）
+(The `dsh.client` declaration in the client package's `package.json` lets the Host's module scan discover the browser bundle automatically.)
 
-## ⚙️ 配置
+## ⚙️ Configuration
 
-1. 打开 **设置 → 邮件通知**，选择邮箱预设（Gmail / QQ / 163 / 126 / Outlook / 自定义）。
-2. 填写：登录账号、发件人邮箱、默认收件人、总结详略。
-3. 密码/授权码填在「密码」栏，保存后会写入凭证（`EMAIL_SMTP_PASSWORD`）。
+1. Open **Settings → Email** (邮件通知), pick a provider preset (Gmail / QQ / 163 / 126 / Outlook / Custom).
+2. Fill in: login username, sender address, default recipient, summary detail level.
+3. Enter the password / authorization code in the password field; saving stores it as a credential (`EMAIL_SMTP_PASSWORD`).
 
-也可以直接用环境变量提供 SMTP 配置（优先于设置里的手动字段，密码仍走凭证）：
+You can also provide SMTP configuration through environment variables:
 
-| 环境变量 | 含义 |
+| Environment variable | Meaning |
 |---|---|
-| `EMAIL_SMTP_PASSWORD` | SMTP 密码 / 授权码（凭证） |
-| `HTTPS_PROXY` / `HTTP_PROXY` / `ALL_PROXY` | 出站代理（如 `http://127.0.0.1:12345` 或 `socks5://...`） |
+| `EMAIL_SMTP_PASSWORD` | SMTP password / authorization code (credential) |
+| `HTTPS_PROXY` / `HTTP_PROXY` / `ALL_PROXY` | outbound proxy, e.g. `http://127.0.0.1:12345` or `socks5://...` |
 
-## 📮 邮箱预设
+## 📮 Provider presets
 
-| 服务商 | 主机 | 端口 / 加密 |
+| Provider | Host | Port / encryption |
 |---|---|---|
 | Gmail | `smtp.gmail.com` | 587 / STARTTLS |
-| QQ 邮箱 | `smtp.qq.com` | 465 / SSL |
-| 163 邮箱 | `smtp.163.com` | 465 / SSL |
-| 126 邮箱 | `smtp.126.com` | 465 / SSL |
+| QQ Mail | `smtp.qq.com` | 465 / SSL |
+| 163 Mail | `smtp.163.com` | 465 / SSL |
+| 126 Mail | `smtp.126.com` | 465 / SSL |
 | Outlook / 365 | `smtp.office365.com` | 587 / STARTTLS |
 
-> 注意：QQ / 163 / 126 需要在邮箱设置里开启 SMTP 并生成「授权码」，用授权码而不是登录密码。
+> Note: QQ / 163 / 126 require enabling SMTP in the mailbox settings and generating an **authorization code**; use the code, not your login password.
 
-## 📁 仓库结构
+## 📁 Repository layout
 
 ```
 packages/
-  email-summary/        # Host 包：设置、凭证、SMTP、总结、自动发送、@Remote
-    src/                # 源码
-    lib/                # 构建产物（含生成的 typert remote）
-  ui-email-summary/     # Client 包：设置页、发送按钮、自动发送开关
+  email-summary/        # Host package: settings, credentials, SMTP, summary, auto-send, @Remote
+    src/                # source
+    lib/                # built artifacts (including the generated typert remote)
+  ui-email-summary/     # Client package: settings page, send button, auto-send toggle
     src/
-    lib/                # 构建产物（lib/client.js 浏览器 bundle）
-.github/workflows/publish.yml   # 打 tag 自动发布
+    lib/                # built artifacts (lib/client.js browser bundle)
+.github/workflows/publish.yml   # auto-publish on tag
 ```
 
-## 🔨 构建（维护者）
+## 🔨 Building (maintainers)
 
-本仓库发布的是**已构建产物**（`lib/`），消费者无需重新构建。源码构建依赖 DeepSeek Harness 的 monorepo 构建体系（tsdown + typert 代码生成），请在 harness 仓库内完成后把 `lib/` 一并提交。
+This repository publishes **pre-built artifacts** (`lib/`); consumers do not need to rebuild. Building the source requires the DeepSeek Harness monorepo build system (tsdown + typert code generation) — build there, then commit the resulting `lib/`.
 
-## 🚀 发布
+## 🚀 Publishing
 
-1. 在 GitHub 仓库 Settings → Secrets → Actions 里添加 `NPM_TOKEN`（npm access token）。
-2. 打 tag 触发自动发布：
+1. Add `NPM_TOKEN` (an npm access token) under GitHub repo `Settings → Secrets and variables → Actions`.
+2. Tag and push to trigger the release:
 
 ```sh
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-或本地手动：
+Or locally:
 
 ```sh
 npm run publish:all
 ```
 
-## ⚠️ 前置依赖
+## ⚠️ Prerequisites
 
-本插件 `peerDependencies` 依赖 DeepSeek Harness 的运行时包（`@deepseek-ai/cordis`、`@deepseek-ai/dsh-llm`、`@deepseek-ai/dsh-session` 等），消费者需先有可用的 DSH 运行时环境。
+This plugin peer-depends on the DeepSeek Harness runtime packages (`@deepseek-ai/cordis`, `@deepseek-ai/dsh-llm`, `@deepseek-ai/dsh-session`, …). Consumers need a working DSH runtime.
 
 ## License
 
