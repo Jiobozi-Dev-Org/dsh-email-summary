@@ -6,43 +6,63 @@ window.__ModuleLoader__.load({
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 		let react_jsx_runtime = require("react/jsx-runtime");
 		let react = require("react");
+		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
+		//#region \0dsh-css:D:\public\deepseek-harness\packages\client\ui-email-summary\src\client\EmailSendAction.module.css.mjs
+		const css = ".UYZKjW_action{width:28px;height:28px;color:var(--dsw-alias-label-tertiary);cursor:pointer;background:0 0;border:none;border-radius:28px;justify-content:center;align-items:center;padding:6px;display:inline-flex}.UYZKjW_action:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}.UYZKjW_action:disabled{cursor:default;opacity:.4}.UYZKjW_failure{text-overflow:ellipsis;white-space:nowrap;max-width:220px;color:var(--dsw-alias-label-tertiary);padding-left:4px;font-size:13px;line-height:20px;overflow:hidden}";
+		const tagId = "@deepseek-ai/dsh-client-ui-email-summary/EmailSendAction.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
+			const tag = document.createElement("style");
+			tag.dataset.plugin = "@deepseek-ai/dsh-client-ui-email-summary";
+			tag.dataset.pluginCss = tagId;
+			tag.textContent = css;
+			document.head.appendChild(tag);
+		}
+		var EmailSendAction_module_css_default = {
+			"action": "UYZKjW_action",
+			"failure": "UYZKjW_failure"
+		};
+		//#endregion
 		//#region lib/types/client/EmailSendAction.js
 		/**
 		* One assistant-message "send email" action in the message IconActions row.
+		* Rendered as a circular icon button with a Tooltip, matching the shared
+		* action chrome (copy / like / dislike).
 		* @module @deepseek-ai/dsh-client-ui-email-summary/client/EmailSendAction
 		*/
 		/**
-		* A single button that summarizes the current conversation and emails it.
+		* A single icon button that summarizes the current conversation and emails it.
 		* @param props - the injected `send` verb and the bound translator.
 		*/
 		function EmailSendAction({ send, t }) {
 			const [pending, setPending] = (0, react.useState)(false);
 			const [failure, setFailure] = (0, react.useState)(null);
-			return (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)("button", {
-				type: "button",
-				onClick: (0, react.useCallback)(() => {
-					if (pending) return;
-					setPending(true);
-					setFailure(null);
-					send().then((result) => {
-						setPending(false);
-						if (!result.ok) setFailure(result.error ?? t("send.failed"));
-					});
-				}, [
-					pending,
-					send,
-					t
-				]),
-				disabled: pending,
-				title: t("send.title"),
-				style: { cursor: pending ? "wait" : "pointer" },
-				children: pending ? t("send.pending") : t("send.label")
+			const onClick = (0, react.useCallback)(() => {
+				if (pending) return;
+				setPending(true);
+				setFailure(null);
+				send().then((result) => {
+					setPending(false);
+					if (!result.ok) setFailure(result.error ?? t("send.failed"));
+				});
+			}, [
+				pending,
+				send,
+				t
+			]);
+			return (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Tooltip, {
+				label: pending ? t("send.pending") : t("send.label"),
+				side: "bottom",
+				children: (0, react_jsx_runtime.jsx)("button", {
+					type: "button",
+					className: EmailSendAction_module_css_default.action,
+					"aria-label": t("send.label"),
+					disabled: pending,
+					onClick,
+					children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconSendOutline16, {})
+				})
 			}), failure !== null && (0, react_jsx_runtime.jsx)("span", {
+				className: EmailSendAction_module_css_default.failure,
 				role: "status",
-				style: {
-					color: "var(--dsh-color-danger, #c0392b)",
-					fontSize: 12
-				},
 				children: failure
 			})] });
 		}
