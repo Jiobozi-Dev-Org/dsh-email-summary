@@ -220,14 +220,17 @@ export class EmailSummaryService extends TypertRemoteService {
 
   /** Read the raw persisted settings (the surface edits these). */
   @Remote('getSettings')
-  async getSettings(): Promise<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean; defaultPrompt: string }> {
+  async getSettings(): Promise<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean; defaultPrompts: { brief: string; detailed: string } }> {
     const raw = this.settingsScope.get() ?? DEFAULT_EMAIL_SETTINGS
     const mail = await this.resolveMail()
     return {
       settings: raw,
       presets: [...EMAIL_PROVIDER_PRESETS],
       configured: mail.host !== '' && mail.from !== '',
-      defaultPrompt: defaultSystemPrompt(raw.style === 'brief' ? 'brief' : 'detailed'),
+      defaultPrompts: {
+        brief: defaultSystemPrompt('brief'),
+        detailed: defaultSystemPrompt('detailed'),
+      },
     }
   }
 

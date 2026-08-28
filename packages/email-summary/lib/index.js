@@ -852,7 +852,10 @@ let EmailSummaryService = (() => {
 				settings: raw,
 				presets: [...EMAIL_PROVIDER_PRESETS],
 				configured: mail.host !== "" && mail.from !== "",
-				defaultPrompt: defaultSystemPrompt(raw.style === "brief" ? "brief" : "detailed")
+				defaultPrompts: {
+					brief: defaultSystemPrompt("brief"),
+					detailed: defaultSystemPrompt("detailed")
+				}
 			};
 		}
 		/** Persist a partial settings patch. */

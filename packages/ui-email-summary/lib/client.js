@@ -254,16 +254,23 @@ window.__ModuleLoader__.load({
 			const [settings, setSettings] = (0, react.useState)(null);
 			const [presets, setPresets] = (0, react.useState)([]);
 			const [password, setPassword] = (0, react.useState)("");
-			const [defaultPrompt, setDefaultPrompt] = (0, react.useState)("");
+			const [defaultPrompts, setDefaultPrompts] = (0, react.useState)({
+				brief: "",
+				detailed: ""
+			});
 			const [saving, setSaving] = (0, react.useState)(false);
 			const [message, setMessage] = (0, react.useState)(null);
 			(0, react.useEffect)(() => {
 				let alive = true;
 				api.getSettings().then((result) => {
 					if (!alive) return;
-					setSettings(result.settings);
 					setPresets(result.presets);
-					setDefaultPrompt(result.defaultPrompt);
+					setDefaultPrompts(result.defaultPrompts);
+					const style = result.settings.style === "brief" ? "brief" : "detailed";
+					setSettings({
+						...result.settings,
+						prompt: (result.settings.prompt ?? "").trim() !== "" ? result.settings.prompt : result.defaultPrompts[style]
+					});
 				});
 				return () => {
 					alive = false;
@@ -285,18 +292,40 @@ window.__ModuleLoader__.load({
 				});
 				else patch({ provider: id });
 			}, [presets, patch]);
-			const loadDefaultPrompt = (0, react.useCallback)(() => {
-				if (defaultPrompt !== "") setSettings((current) => current === null ? current : {
+			const restoreDefaultPrompt = (0, react.useCallback)(() => {
+				if (settings === null) return;
+				const def = defaultPrompts[settings.style === "brief" ? "brief" : "detailed"];
+				if (def !== "") setSettings((current) => current === null ? current : {
 					...current,
-					prompt: defaultPrompt
+					prompt: def
 				});
-			}, [defaultPrompt]);
+			}, [settings, defaultPrompts]);
+			const onStyleChange = (0, react.useCallback)((nextStyle) => {
+				setSettings((current) => {
+					if (current === null) return current;
+					const style = nextStyle === "brief" ? "brief" : "detailed";
+					const currentPrompt = (current.prompt ?? "").trim();
+					const isDefault = currentPrompt === "" || currentPrompt === defaultPrompts.brief.trim() || currentPrompt === defaultPrompts.detailed.trim();
+					return {
+						...current,
+						style,
+						prompt: isDefault ? defaultPrompts[style] ?? current.prompt : current.prompt
+					};
+				});
+			}, [defaultPrompts]);
 			const onSave = (0, react.useCallback)(() => {
 				if (settings === null || saving) return;
 				setSaving(true);
 				setMessage(null);
 				(async () => {
-					const saved = await api.saveSettings({ patch: settings });
+					const def = (defaultPrompts[settings.style === "brief" ? "brief" : "detailed"] ?? "").trim();
+					const promptText = (settings.prompt ?? "").trim();
+					const customPrompt = promptText === "" || promptText === def ? "" : settings.prompt;
+					const patch = {
+						...settings,
+						prompt: customPrompt
+					};
+					const saved = await api.saveSettings({ patch });
 					if (password !== "") await api.setPassword({ password });
 					setSaving(false);
 					setMessage(saved.ok ? t("settings.saved") : saved.error ?? t("settings.error"));
@@ -305,6 +334,7 @@ window.__ModuleLoader__.load({
 				settings,
 				saving,
 				password,
+				defaultPrompts,
 				api,
 				t
 			]);
@@ -474,7 +504,7 @@ window.__ModuleLoader__.load({
 							children: [(0, react_jsx_runtime.jsxs)("select", {
 								style: input,
 								value: settings.style,
-								onChange: (event) => patch({ style: event.target.value }),
+								onChange: (event) => onStyleChange(event.target.value),
 								children: [(0, react_jsx_runtime.jsx)("option", {
 									value: "detailed",
 									children: t("settings.detailed")
@@ -510,8 +540,8 @@ window.__ModuleLoader__.load({
 								(0, react_jsx_runtime.jsx)("button", {
 									type: "button",
 									style: linkBtn,
-									onClick: loadDefaultPrompt,
-									children: t("settings.loadDefaultPrompt")
+									onClick: restoreDefaultPrompt,
+									children: t("settings.restoreDefaultPrompt")
 								})
 							]
 						}),
@@ -565,9 +595,9 @@ window.__ModuleLoader__.load({
 			"settings.style": "总结详略",
 			"settings.styleHint": "详细版更完整，简短版更凝练",
 			"settings.prompt": "总结提示词",
-			"settings.promptPlaceholder": "留空则使用所选样式的默认提示词",
-			"settings.promptHint": "留空则用「详略」对应的默认提示词；点「载入默认」可查看并修改默认提示词",
-			"settings.loadDefaultPrompt": "载入默认提示词",
+			"settings.promptPlaceholder": "自定义提示词",
+			"settings.promptHint": "已预填所选样式的默认提示词；改它并保存即成为自定义；点「恢复默认」回到内置默认",
+			"settings.restoreDefaultPrompt": "恢复默认提示词",
 			"settings.detailed": "详细",
 			"settings.brief": "简短",
 			"settings.save": "保存",
@@ -604,9 +634,9 @@ window.__ModuleLoader__.load({
 			"settings.style": "Summary detail",
 			"settings.styleHint": "Detailed is fuller; brief is more concise",
 			"settings.prompt": "Summary prompt",
-			"settings.promptPlaceholder": "Leave blank to use the default for the selected style",
-			"settings.promptHint": "Blank uses the default for the selected detail level; click \"Load default\" to view and edit it",
-			"settings.loadDefaultPrompt": "Load default prompt",
+			"settings.promptPlaceholder": "Custom prompt",
+			"settings.promptHint": "The default for the selected style is pre-filled; edit and save to customize, or click \"Restore default\" to revert",
+			"settings.restoreDefaultPrompt": "Restore default prompt",
 			"settings.detailed": "Detailed",
 			"settings.brief": "Brief",
 			"settings.save": "Save",

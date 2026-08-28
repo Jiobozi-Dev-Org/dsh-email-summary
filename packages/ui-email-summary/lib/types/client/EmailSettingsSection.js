@@ -52,7 +52,7 @@ export function EmailSettingsSection({ api, t }) {
     const [settings, setSettings] = useState(null);
     const [presets, setPresets] = useState([]);
     const [password, setPassword] = useState('');
-    const [defaultPrompt, setDefaultPrompt] = useState('');
+    const [defaultPrompts, setDefaultPrompts] = useState({ brief: '', detailed: '' });
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState(null);
     useEffect(() => {
@@ -60,9 +60,17 @@ export function EmailSettingsSection({ api, t }) {
         void api.getSettings().then((result) => {
             if (!alive)
                 return;
-            setSettings(result.settings);
             setPresets(result.presets);
-            setDefaultPrompt(result.defaultPrompt);
+            setDefaultPrompts(result.defaultPrompts);
+            // Pre-fill the prompt with the effective prompt (custom if set, else the
+            // default for the current style) so the user can see and edit it.
+            const style = result.settings.style === 'brief' ? 'brief' : 'detailed';
+            setSettings({
+                ...result.settings,
+                prompt: (result.settings.prompt ?? '').trim() !== ''
+                    ? result.settings.prompt
+                    : result.defaultPrompts[style],
+            });
         });
         return () => { alive = false; };
     }, [api]);
@@ -78,26 +86,48 @@ export function EmailSettingsSection({ api, t }) {
             patch({ provider: id });
         }
     }, [presets, patch]);
-    const loadDefaultPrompt = useCallback(() => {
-        if (defaultPrompt !== '') {
-            setSettings(current => (current === null ? current : { ...current, prompt: defaultPrompt }));
-        }
-    }, [defaultPrompt]);
+    const restoreDefaultPrompt = useCallback(() => {
+        if (settings === null)
+            return;
+        const style = settings.style === 'brief' ? 'brief' : 'detailed';
+        const def = defaultPrompts[style];
+        if (def !== '')
+            setSettings(current => (current === null ? current : { ...current, prompt: def }));
+    }, [settings, defaultPrompts]);
+    const onStyleChange = useCallback((nextStyle) => {
+        setSettings(current => {
+            if (current === null)
+                return current;
+            const style = nextStyle === 'brief' ? 'brief' : 'detailed';
+            const currentPrompt = (current.prompt ?? '').trim();
+            const isDefault = currentPrompt === ''
+                || currentPrompt === defaultPrompts.brief.trim()
+                || currentPrompt === defaultPrompts.detailed.trim();
+            return { ...current, style, prompt: isDefault ? (defaultPrompts[style] ?? current.prompt) : current.prompt };
+        });
+    }, [defaultPrompts]);
     const onSave = useCallback(() => {
         if (settings === null || saving)
             return;
         setSaving(true);
         setMessage(null);
         void (async () => {
-            const saved = await api.saveSettings({ patch: settings });
+            // A prompt that is empty or equals the selected style's built-in default
+            // is stored empty, so the summarizer keeps following the style default.
+            const style = settings.style === 'brief' ? 'brief' : 'detailed';
+            const def = (defaultPrompts[style] ?? '').trim();
+            const promptText = (settings.prompt ?? '').trim();
+            const customPrompt = promptText === '' || promptText === def ? '' : settings.prompt;
+            const patch = { ...settings, prompt: customPrompt };
+            const saved = await api.saveSettings({ patch });
             if (password !== '')
                 await api.setPassword({ password });
             setSaving(false);
             setMessage(saved.ok ? t('settings.saved') : (saved.error ?? t('settings.error')));
         })();
-    }, [settings, saving, password, api, t]);
+    }, [settings, saving, password, defaultPrompts, api, t]);
     if (settings === null)
         return null;
-    return (_jsxs("li", { style: card, children: [_jsxs("button", { type: "button", style: headerBtn, "aria-expanded": open, onClick: () => { setOpen(!open); }, children: [_jsxs("span", { style: headerText, children: [_jsx("span", { style: title, children: t('nav') }), _jsx("span", { style: desc, children: t('desc') })] }), _jsx("span", { style: chevron, children: open ? '▾' : '▸' })] }), open && (_jsxs("div", { style: body, children: [_jsx(FieldGroup, { label: t('settings.provider'), children: _jsx("select", { style: input, value: settings.provider, onChange: event => onProvider(event.target.value), children: presets.map(preset => _jsx("option", { value: preset.id, children: preset.label }, preset.id)) }) }), _jsxs(FieldGroup, { label: t('settings.host'), children: [_jsx("input", { style: input, value: settings.smtpHost, onChange: event => patch({ smtpHost: event.target.value }) }), _jsx("div", { style: fieldHint, children: t('settings.hostHint') })] }), _jsxs("div", { style: inlineRow, children: [_jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.port') }), _jsx("input", { style: input, type: "number", value: settings.smtpPort, onChange: event => patch({ smtpPort: Number(event.target.value) }) }), _jsx("span", { style: fieldHint, children: t('settings.portHint') })] }), _jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.secure') }), _jsxs("select", { style: input, value: settings.secure, onChange: event => patch({ secure: event.target.value }), children: [_jsx("option", { value: "starttls", children: "STARTTLS" }), _jsx("option", { value: "ssl", children: "SSL" }), _jsx("option", { value: "none", children: "None" })] }), _jsx("span", { style: fieldHint, children: t('settings.secureHint') })] })] }), _jsxs(FieldGroup, { label: t('settings.username'), children: [_jsx("input", { style: input, value: settings.username, onChange: event => patch({ username: event.target.value }) }), _jsx("div", { style: fieldHint, children: t('settings.usernameHint') })] }), _jsx(FieldGroup, { label: t('settings.password'), children: _jsx("input", { style: input, type: "password", value: password, placeholder: t('settings.passwordHint'), onChange: event => setPassword(event.target.value) }) }), _jsxs("div", { style: inlineRow, children: [_jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.from') }), _jsx("input", { style: input, value: settings.from, onChange: event => patch({ from: event.target.value }) }), _jsx("span", { style: fieldHint, children: t('settings.fromHint') })] }), _jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.recipient') }), _jsx("input", { style: input, value: settings.defaultRecipient, onChange: event => patch({ defaultRecipient: event.target.value }) }), _jsx("span", { style: fieldHint, children: t('settings.recipientHint') })] })] }), _jsxs(FieldGroup, { label: t('settings.style'), children: [_jsxs("select", { style: input, value: settings.style, onChange: event => patch({ style: event.target.value }), children: [_jsx("option", { value: "detailed", children: t('settings.detailed') }), _jsx("option", { value: "brief", children: t('settings.brief') })] }), _jsx("div", { style: fieldHint, children: t('settings.styleHint') })] }), _jsxs(FieldGroup, { label: t('settings.prompt'), children: [_jsx("textarea", { style: { ...input, minHeight: 120, resize: 'vertical', fontFamily: 'ui-monospace,Consolas,monospace', fontSize: 13, lineHeight: 1.5 }, value: settings.prompt, placeholder: t('settings.promptPlaceholder'), onChange: event => patch({ prompt: event.target.value }) }), _jsx("div", { style: fieldHint, children: t('settings.promptHint') }), _jsx("button", { type: "button", style: linkBtn, onClick: loadDefaultPrompt, children: t('settings.loadDefaultPrompt') })] }), _jsxs("div", { style: footer, children: [_jsx("button", { type: "button", style: saveBtn, onClick: onSave, disabled: saving, children: saving ? t('settings.saving') : t('settings.save') }), message !== null && _jsx("span", { style: statusText, role: "status", children: message })] })] }))] }));
+    return (_jsxs("li", { style: card, children: [_jsxs("button", { type: "button", style: headerBtn, "aria-expanded": open, onClick: () => { setOpen(!open); }, children: [_jsxs("span", { style: headerText, children: [_jsx("span", { style: title, children: t('nav') }), _jsx("span", { style: desc, children: t('desc') })] }), _jsx("span", { style: chevron, children: open ? '▾' : '▸' })] }), open && (_jsxs("div", { style: body, children: [_jsx(FieldGroup, { label: t('settings.provider'), children: _jsx("select", { style: input, value: settings.provider, onChange: event => onProvider(event.target.value), children: presets.map(preset => _jsx("option", { value: preset.id, children: preset.label }, preset.id)) }) }), _jsxs(FieldGroup, { label: t('settings.host'), children: [_jsx("input", { style: input, value: settings.smtpHost, onChange: event => patch({ smtpHost: event.target.value }) }), _jsx("div", { style: fieldHint, children: t('settings.hostHint') })] }), _jsxs("div", { style: inlineRow, children: [_jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.port') }), _jsx("input", { style: input, type: "number", value: settings.smtpPort, onChange: event => patch({ smtpPort: Number(event.target.value) }) }), _jsx("span", { style: fieldHint, children: t('settings.portHint') })] }), _jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.secure') }), _jsxs("select", { style: input, value: settings.secure, onChange: event => patch({ secure: event.target.value }), children: [_jsx("option", { value: "starttls", children: "STARTTLS" }), _jsx("option", { value: "ssl", children: "SSL" }), _jsx("option", { value: "none", children: "None" })] }), _jsx("span", { style: fieldHint, children: t('settings.secureHint') })] })] }), _jsxs(FieldGroup, { label: t('settings.username'), children: [_jsx("input", { style: input, value: settings.username, onChange: event => patch({ username: event.target.value }) }), _jsx("div", { style: fieldHint, children: t('settings.usernameHint') })] }), _jsx(FieldGroup, { label: t('settings.password'), children: _jsx("input", { style: input, type: "password", value: password, placeholder: t('settings.passwordHint'), onChange: event => setPassword(event.target.value) }) }), _jsxs("div", { style: inlineRow, children: [_jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.from') }), _jsx("input", { style: input, value: settings.from, onChange: event => patch({ from: event.target.value }) }), _jsx("span", { style: fieldHint, children: t('settings.fromHint') })] }), _jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.recipient') }), _jsx("input", { style: input, value: settings.defaultRecipient, onChange: event => patch({ defaultRecipient: event.target.value }) }), _jsx("span", { style: fieldHint, children: t('settings.recipientHint') })] })] }), _jsxs(FieldGroup, { label: t('settings.style'), children: [_jsxs("select", { style: input, value: settings.style, onChange: event => onStyleChange(event.target.value), children: [_jsx("option", { value: "detailed", children: t('settings.detailed') }), _jsx("option", { value: "brief", children: t('settings.brief') })] }), _jsx("div", { style: fieldHint, children: t('settings.styleHint') })] }), _jsxs(FieldGroup, { label: t('settings.prompt'), children: [_jsx("textarea", { style: { ...input, minHeight: 120, resize: 'vertical', fontFamily: 'ui-monospace,Consolas,monospace', fontSize: 13, lineHeight: 1.5 }, value: settings.prompt, placeholder: t('settings.promptPlaceholder'), onChange: event => patch({ prompt: event.target.value }) }), _jsx("div", { style: fieldHint, children: t('settings.promptHint') }), _jsx("button", { type: "button", style: linkBtn, onClick: restoreDefaultPrompt, children: t('settings.restoreDefaultPrompt') })] }), _jsxs("div", { style: footer, children: [_jsx("button", { type: "button", style: saveBtn, onClick: onSave, disabled: saving, children: saving ? t('settings.saving') : t('settings.save') }), message !== null && _jsx("span", { style: statusText, role: "status", children: message })] })] }))] }));
 }
 //# sourceMappingURL=EmailSettingsSection.js.map

@@ -30,7 +30,10 @@ const _deepseek_ai_dsh_email_summary_emailSummary_getSettings_result$schema = z.
   'secure': z.union([z.literal("starttls"), z.literal("ssl"), z.literal("none")]),
 })),
   'configured': z.boolean(),
-  'defaultPrompt': z.string(),
+  'defaultPrompts': z.object({
+  'brief': z.string(),
+  'detailed': z.string(),
+}),
 })
 const _deepseek_ai_dsh_email_summary_emailSummary_saveSettings_parameter_0$schema = z.object({
   'patch': z.object({
@@ -153,7 +156,7 @@ export const TYPERT_REMOTE = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/saveSettings:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_saveSettings_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":236,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":239,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/sendNow',
@@ -203,7 +206,7 @@ export const TYPERT_REMOTE = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/setPassword:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_setPassword_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":250,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":253,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/status',

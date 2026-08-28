@@ -65,7 +65,7 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
   const [settings, setSettings] = useState<EmailSummarySettings | null>(null)
   const [presets, setPresets] = useState<EmailProviderPreset[]>([])
   const [password, setPassword] = useState('')
-  const [defaultPrompt, setDefaultPrompt] = useState('')
+  const [defaultPrompts, setDefaultPrompts] = useState<{ brief: string; detailed: string }>({ brief: '', detailed: '' })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -73,9 +73,17 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
     let alive = true
     void api.getSettings().then((result) => {
       if (!alive) return
-      setSettings(result.settings)
       setPresets(result.presets)
-      setDefaultPrompt(result.defaultPrompt)
+      setDefaultPrompts(result.defaultPrompts)
+      // Pre-fill the prompt with the effective prompt (custom if set, else the
+      // default for the current style) so the user can see and edit it.
+      const style = result.settings.style === 'brief' ? 'brief' : 'detailed'
+      setSettings({
+        ...result.settings,
+        prompt: (result.settings.prompt ?? '').trim() !== ''
+          ? result.settings.prompt
+          : result.defaultPrompts[style],
+      })
     })
     return () => { alive = false }
   }, [api])
@@ -93,23 +101,43 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
     }
   }, [presets, patch])
 
-  const loadDefaultPrompt = useCallback(() => {
-    if (defaultPrompt !== '') {
-      setSettings(current => (current === null ? current : { ...current, prompt: defaultPrompt }))
-    }
-  }, [defaultPrompt])
+  const restoreDefaultPrompt = useCallback(() => {
+    if (settings === null) return
+    const style = settings.style === 'brief' ? 'brief' : 'detailed'
+    const def = defaultPrompts[style]
+    if (def !== '') setSettings(current => (current === null ? current : { ...current, prompt: def }))
+  }, [settings, defaultPrompts])
+
+  const onStyleChange = useCallback((nextStyle: string) => {
+    setSettings(current => {
+      if (current === null) return current
+      const style = nextStyle === 'brief' ? 'brief' : 'detailed'
+      const currentPrompt = (current.prompt ?? '').trim()
+      const isDefault = currentPrompt === ''
+        || currentPrompt === defaultPrompts.brief.trim()
+        || currentPrompt === defaultPrompts.detailed.trim()
+      return { ...current, style, prompt: isDefault ? (defaultPrompts[style] ?? current.prompt) : current.prompt }
+    })
+  }, [defaultPrompts])
 
   const onSave = useCallback(() => {
     if (settings === null || saving) return
     setSaving(true)
     setMessage(null)
     void (async () => {
-      const saved = await api.saveSettings({ patch: settings })
+      // A prompt that is empty or equals the selected style's built-in default
+      // is stored empty, so the summarizer keeps following the style default.
+      const style = settings.style === 'brief' ? 'brief' : 'detailed'
+      const def = (defaultPrompts[style] ?? '').trim()
+      const promptText = (settings.prompt ?? '').trim()
+      const customPrompt = promptText === '' || promptText === def ? '' : settings.prompt
+      const patch = { ...settings, prompt: customPrompt }
+      const saved = await api.saveSettings({ patch })
       if (password !== '') await api.setPassword({ password })
       setSaving(false)
       setMessage(saved.ok ? t('settings.saved') : (saved.error ?? t('settings.error')))
     })()
-  }, [settings, saving, password, api, t])
+  }, [settings, saving, password, defaultPrompts, api, t])
 
   if (settings === null) return null
 
@@ -203,7 +231,7 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
             <select
               style={input}
               value={settings.style}
-              onChange={event => patch({ style: event.target.value as EmailSummarySettings['style'] })}
+              onChange={event => onStyleChange(event.target.value as EmailSummarySettings['style'])}
             >
               <option value="detailed">{t('settings.detailed')}</option>
               <option value="brief">{t('settings.brief')}</option>
@@ -219,8 +247,8 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
               onChange={event => patch({ prompt: event.target.value })}
             />
             <div style={fieldHint}>{t('settings.promptHint')}</div>
-            <button type="button" style={linkBtn} onClick={loadDefaultPrompt}>
-              {t('settings.loadDefaultPrompt')}
+            <button type="button" style={linkBtn} onClick={restoreDefaultPrompt}>
+              {t('settings.restoreDefaultPrompt')}
             </button>
           </FieldGroup>
 

@@ -30,7 +30,7 @@ export declare const zh: {
     'settings.prompt': string;
     'settings.promptPlaceholder': string;
     'settings.promptHint': string;
-    'settings.loadDefaultPrompt': string;
+    'settings.restoreDefaultPrompt': string;
     'settings.detailed': string;
     'settings.brief': string;
     'settings.save': string;
@@ -77,7 +77,7 @@ export declare const en: {
     'settings.prompt': string;
     'settings.promptPlaceholder': string;
     'settings.promptHint': string;
-    'settings.loadDefaultPrompt': string;
+    'settings.restoreDefaultPrompt': string;
     'settings.detailed': string;
     'settings.brief': string;
     'settings.save': string;

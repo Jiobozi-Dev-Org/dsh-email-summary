@@ -40,7 +40,10 @@ export declare class EmailSummaryService extends TypertRemoteService {
         settings: EmailSummarySettings;
         presets: EmailProviderPreset[];
         configured: boolean;
-        defaultPrompt: string;
+        defaultPrompts: {
+            brief: string;
+            detailed: string;
+        };
     }>;
     /** Persist a partial settings patch. */
     saveSettings(request: {

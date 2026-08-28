@@ -39,7 +39,10 @@ export interface EmailSummaryApi {
         settings: EmailSummarySettings;
         presets: EmailProviderPreset[];
         configured: boolean;
-        defaultPrompt: string;
+        defaultPrompts: {
+            brief: string;
+            detailed: string;
+        };
     }>;
     saveSettings(request: {
         patch: Partial<EmailSummarySettings>;
