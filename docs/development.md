@@ -43,6 +43,16 @@ pnpm exec tsdown --env.DSH_BUILD_FACE client                    # 打包 client
 
 > 本仓库发布的是预构建 `lib/`，消费者无需构建。源码构建需要 harness 的 tsdown + typert 体系。
 
+## 测试
+
+单元测试在 harness monorepo 内运行（依赖 vitest 与 `@deepseek-ai/*` 运行时）：
+
+```sh
+pnpm exec vitest run packages/notification/email-summary/tests/
+```
+
+覆盖：会话转写（`buildTranscript`）、截断（`capTranscript`）、Markdown→HTML（`markdownToHtml`）、邮件模板（`buildEmailHtml`）、默认提示词（`defaultSystemPrompt`）。
+
 ## 发布
 
 ```sh
