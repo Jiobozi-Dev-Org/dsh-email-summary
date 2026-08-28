@@ -1,0 +1,243 @@
+/**
+ * Host service: summarize a conversation and email it over SMTP, with a
+ * durable settings namespace, a credential-backed password, per-session
+ * auto-send arming, and a generated Client Remote (`remote.emailSummary`).
+ * @module @deepseek-ai/dsh-email-summary
+ */
+var __runInitializers = (this && this.__runInitializers) || function (thisArg, initializers, value) {
+    var useValue = arguments.length > 2;
+    for (var i = 0; i < initializers.length; i++) {
+        value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+    }
+    return useValue ? value : void 0;
+};
+var __esDecorate = (this && this.__esDecorate) || function (ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
+    function accept(f) { if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected"); return f; }
+    var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+    var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
+    var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
+    var _, done = false;
+    for (var i = decorators.length - 1; i >= 0; i--) {
+        var context = {};
+        for (var p in contextIn) context[p] = p === "access" ? {} : contextIn[p];
+        for (var p in contextIn.access) context.access[p] = contextIn.access[p];
+        context.addInitializer = function (f) { if (done) throw new TypeError("Cannot add initializers after decoration has completed"); extraInitializers.push(accept(f || null)); };
+        var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context);
+        if (kind === "accessor") {
+            if (result === void 0) continue;
+            if (result === null || typeof result !== "object") throw new TypeError("Object expected");
+            if (_ = accept(result.get)) descriptor.get = _;
+            if (_ = accept(result.set)) descriptor.set = _;
+            if (_ = accept(result.init)) initializers.unshift(_);
+        }
+        else if (_ = accept(result)) {
+            if (kind === "field") initializers.unshift(_);
+            else descriptor[key] = _;
+        }
+    }
+    if (target) Object.defineProperty(target, contextIn.name, descriptor);
+    done = true;
+};
+import { TypertRemoteService, Remote } from '@deepseek-ai/dsh-typert-protocol';
+import { settingsNamespace } from '@deepseek-ai/dsh-settings';
+import { credentialRef } from '@deepseek-ai/dsh-credentials';
+import { EMAIL_SUMMARY_SETTINGS_NAMESPACE, EmailSummarySettingsSchema, DEFAULT_EMAIL_SETTINGS, EMAIL_PROVIDER_PRESETS, presetById, } from "./spec.js";
+import { sendSmtpMail } from "./smtp.js";
+import { buildTranscript, capTranscript, generateSummary, markdownToHtml, buildEmailHtml } from "./summary.js";
+export { EMAIL_PROVIDER_PRESETS, EMAIL_SUMMARY_SETTINGS_NAMESPACE, DEFAULT_EMAIL_SETTINGS } from "./spec.js";
+/** Environment-variable name for the SMTP password. */
+const SMTP_PASSWORD_ENV = 'EMAIL_SMTP_PASSWORD';
+/** Format a Date as `YY年M月D日` (e.g. `26年8月26日`). */
+function formatChineseDate(date) {
+    const year = String(date.getFullYear() % 100);
+    const month = String(date.getMonth() + 1);
+    const day = String(date.getDate());
+    return `${year}年${month}月${day}日`;
+}
+/** Host service for conversation summarization + SMTP delivery. */
+let EmailSummaryService = (() => {
+    let _classSuper = TypertRemoteService;
+    let _instanceExtraInitializers = [];
+    let _sendNow_decorators;
+    let _armAutosend_decorators;
+    let _status_decorators;
+    let _getSettings_decorators;
+    let _saveSettings_decorators;
+    let _setPassword_decorators;
+    return class EmailSummaryService extends _classSuper {
+        static {
+            const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
+            _sendNow_decorators = [Remote('sendNow')];
+            _armAutosend_decorators = [Remote('armAutosend')];
+            _status_decorators = [Remote('status')];
+            _getSettings_decorators = [Remote('getSettings')];
+            _saveSettings_decorators = [Remote('saveSettings')];
+            _setPassword_decorators = [Remote('setPassword')];
+            __esDecorate(this, null, _sendNow_decorators, { kind: "method", name: "sendNow", static: false, private: false, access: { has: obj => "sendNow" in obj, get: obj => obj.sendNow }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate(this, null, _armAutosend_decorators, { kind: "method", name: "armAutosend", static: false, private: false, access: { has: obj => "armAutosend" in obj, get: obj => obj.armAutosend }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate(this, null, _status_decorators, { kind: "method", name: "status", static: false, private: false, access: { has: obj => "status" in obj, get: obj => obj.status }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate(this, null, _getSettings_decorators, { kind: "method", name: "getSettings", static: false, private: false, access: { has: obj => "getSettings" in obj, get: obj => obj.getSettings }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate(this, null, _saveSettings_decorators, { kind: "method", name: "saveSettings", static: false, private: false, access: { has: obj => "saveSettings" in obj, get: obj => obj.saveSettings }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate(this, null, _setPassword_decorators, { kind: "method", name: "setPassword", static: false, private: false, access: { has: obj => "setPassword" in obj, get: obj => obj.setPassword }, metadata: _metadata }, null, _instanceExtraInitializers);
+            if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
+        }
+        static inject = ['llm', 'sessionQuery', 'settings', 'credentials', 'agentDefaultModel'];
+        /** Session ids currently armed for auto-send, with an optional recipient override. */
+        armed = (__runInitializers(this, _instanceExtraInitializers), new Map());
+        /** The durable settings scope (structural type; matches `SettingsScope<T>`). */
+        settingsScope;
+        constructor(ctx) {
+            super(ctx, 'emailSummary');
+            this.settingsScope = ctx.settings.register(settingsNamespace(EMAIL_SUMMARY_SETTINGS_NAMESPACE), EmailSummarySettingsSchema, { base: DEFAULT_EMAIL_SETTINGS });
+            ctx.on('agent/status', (payload) => {
+                if (payload.status !== 'idle')
+                    return;
+                const recipient = this.armed.get(payload.agent.id);
+                if (recipient === undefined && !this.armed.has(payload.agent.id))
+                    return;
+                this.armed.delete(payload.agent.id);
+                void this.summarizeAndSend(payload.agent.id, recipient, undefined, undefined).catch(() => {
+                    // Auto-send failures are non-fatal to the agent turn; the button path reports errors.
+                });
+            });
+        }
+        /** Resolve effective mail configuration from settings + the credential password. */
+        async resolveMail() {
+            const raw = this.settingsScope.get() ?? DEFAULT_EMAIL_SETTINGS;
+            const preset = presetById(raw.provider);
+            const host = preset !== undefined ? preset.host : raw.smtpHost;
+            const port = preset !== undefined ? preset.port : raw.smtpPort;
+            const secure = (preset !== undefined ? preset.secure : raw.secure);
+            const resolved = await this.ctx.credentials.resolve(credentialRef(SMTP_PASSWORD_ENV));
+            const password = resolved?.value ?? '';
+            const from = raw.from !== '' ? raw.from : raw.username;
+            return {
+                host,
+                port,
+                secure,
+                username: raw.username,
+                password,
+                from,
+                style: raw.style === 'brief' ? 'brief' : 'detailed',
+                defaultRecipient: raw.defaultRecipient,
+            };
+        }
+        /** Summarize one session and send it; throws on failure. */
+        async summarizeAndSend(sessionId, recipient, subject, style) {
+            const mail = await this.resolveMail();
+            const to = recipient && recipient !== '' ? recipient : mail.defaultRecipient;
+            if (to === '')
+                throw new Error('未配置收件人：请在设置里填写默认收件人，或点击按钮时指定收件人。');
+            if (mail.host === '')
+                throw new Error('未配置 SMTP 主机：请在设置里选择邮箱预设或填写自定义主机。');
+            if (mail.from === '')
+                throw new Error('未配置发件人：请在设置里填写发件人邮箱。');
+            const surface = await this.ctx.sessionQuery.readSurface(sessionId);
+            const transcript = buildTranscript(surface.events);
+            if (transcript.text.trim() === '')
+                throw new Error('当前会话没有可总结的对话内容。');
+            const selection = this.ctx.agentDefaultModel.currentSelection();
+            if (selection === undefined || selection.provider === '' || selection.model === '') {
+                throw new Error('无法解析可用的 LLM 模型（provider/model）。');
+            }
+            const summary = await generateSummary(this.ctx.llm, selection.provider, selection.model, capTranscript(transcript.text, 20000), style ?? mail.style);
+            const dateLabel = formatChineseDate(new Date());
+            const resolvedSubject = subject && subject !== ''
+                ? subject
+                : `${dateLabel}dsh开发笔记：${summary.title}`;
+            const html = buildEmailHtml(summary.title, dateLabel, markdownToHtml(summary.markdown));
+            await sendSmtpMail({
+                host: mail.host,
+                port: mail.port,
+                secure: mail.secure,
+                username: mail.username,
+                password: mail.password,
+                from: mail.from,
+                to,
+                subject: resolvedSubject,
+                html,
+            });
+            return {
+                ok: true,
+                recipient: to,
+                subject: resolvedSubject,
+                summaryChars: summary.markdown.length,
+                transcriptChars: transcript.text.length,
+                summary: summary.markdown,
+            };
+        }
+        /** Summarize the current conversation and email it now. */
+        async sendNow(request) {
+            try {
+                return await this.summarizeAndSend(request.sessionId, request.recipient, request.subject, request.style);
+            }
+            catch (error) {
+                return {
+                    ok: false,
+                    recipient: request.recipient ?? '',
+                    subject: request.subject ?? '',
+                    summaryChars: 0,
+                    transcriptChars: 0,
+                    error: error instanceof Error ? error.message : String(error),
+                };
+            }
+        }
+        /** Arm or disarm auto-send for one conversation. */
+        armAutosend(request) {
+            if (request.enabled) {
+                this.armed.set(request.sessionId, request.recipient && request.recipient !== '' ? request.recipient : undefined);
+            }
+            else {
+                this.armed.delete(request.sessionId);
+            }
+            return { ok: true, armed: this.armed.has(request.sessionId) };
+        }
+        /** Read configuration + armed state for the settings surface and toggles. */
+        async status(request) {
+            const mail = await this.resolveMail();
+            return {
+                configured: mail.host !== '' && mail.from !== '',
+                defaultRecipient: mail.defaultRecipient,
+                armed: this.armed.has(request.sessionId),
+                presets: [...EMAIL_PROVIDER_PRESETS],
+            };
+        }
+        /** Read the raw persisted settings (the surface edits these). */
+        async getSettings() {
+            const raw = this.settingsScope.get() ?? DEFAULT_EMAIL_SETTINGS;
+            const mail = await this.resolveMail();
+            return {
+                settings: raw,
+                presets: [...EMAIL_PROVIDER_PRESETS],
+                configured: mail.host !== '' && mail.from !== '',
+            };
+        }
+        /** Persist a partial settings patch. */
+        async saveSettings(request) {
+            try {
+                await this.ctx.settings.update(settingsNamespace(EMAIL_SUMMARY_SETTINGS_NAMESPACE), request.patch);
+                return { ok: true };
+            }
+            catch (error) {
+                return { ok: false, error: error instanceof Error ? error.message : String(error) };
+            }
+        }
+        /** Store (or clear) the SMTP password through the credential seam. */
+        async setPassword(request) {
+            try {
+                const ref = credentialRef(SMTP_PASSWORD_ENV);
+                if (request.password === '')
+                    await this.ctx.credentials.unset(ref);
+                else
+                    await this.ctx.credentials.set(ref, request.password);
+                return { ok: true };
+            }
+            catch (error) {
+                return { ok: false, error: error instanceof Error ? error.message : String(error) };
+            }
+        }
+    };
+})();
+export { EmailSummaryService };
+export default EmailSummaryService;
+//# sourceMappingURL=index.js.map

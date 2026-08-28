@@ -1,0 +1,13 @@
+{
+  "name": "dsh-email-summary",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A DeepSeek Harness (DSH) plugin that summarizes a conversation into a styled HTML email and sends it over SMTP.",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "publish:all": "npm publish -w packages/email-summary --access public && npm publish -w packages/ui-email-summary --access public"
+  }
+}
