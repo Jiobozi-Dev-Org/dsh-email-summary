@@ -8,7 +8,7 @@ window.__ModuleLoader__.load({
 		let react = require("react");
 		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
 		//#region \0dsh-css:D:\public\deepseek-harness\packages\client\ui-email-summary\src\client\EmailSendAction.module.css.mjs
-		const css = ".UYZKjW_action{width:28px;height:28px;color:var(--dsw-alias-label-tertiary);cursor:pointer;background:0 0;border:none;border-radius:28px;justify-content:center;align-items:center;padding:6px;display:inline-flex}.UYZKjW_action:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}.UYZKjW_action:disabled{cursor:default;opacity:.4}.UYZKjW_failure{text-overflow:ellipsis;white-space:nowrap;max-width:220px;color:var(--dsw-alias-label-tertiary);padding-left:4px;font-size:13px;line-height:20px;overflow:hidden}";
+		const css = ".UYZKjW_actionPill{height:28px;color:var(--dsw-alias-label-tertiary);cursor:pointer;background:0 0;border:none;border-radius:14px;justify-content:center;align-items:center;gap:4px;padding:0 10px;font-size:13px;display:inline-flex}.UYZKjW_actionPill:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}.UYZKjW_actionPill:disabled{cursor:default;opacity:.4}.UYZKjW_failure{text-overflow:ellipsis;white-space:nowrap;max-width:220px;color:var(--dsw-alias-label-tertiary);padding-left:4px;font-size:13px;line-height:20px;overflow:hidden}";
 		const tagId = "@deepseek-ai/dsh-client-ui-email-summary/EmailSendAction.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -18,19 +18,19 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var EmailSendAction_module_css_default = {
-			"action": "UYZKjW_action",
+			"actionPill": "UYZKjW_actionPill",
 			"failure": "UYZKjW_failure"
 		};
 		//#endregion
 		//#region lib/types/client/EmailSendAction.js
 		/**
 		* One assistant-message "send email" action in the message IconActions row.
-		* Rendered as a circular icon button with a Tooltip, matching the shared
-		* action chrome (copy / like / dislike).
+		* Rendered as a pill button with an icon + label, using the shared theme
+		* tokens so it sits consistently beside the copy / like / dislike icons.
 		* @module @deepseek-ai/dsh-client-ui-email-summary/client/EmailSendAction
 		*/
 		/**
-		* A single icon button that summarizes the current conversation and emails it.
+		* A pill button that summarizes the current conversation and emails it.
 		* @param props - the injected `send` verb and the bound translator.
 		*/
 		function EmailSendAction({ send, t }) {
@@ -49,17 +49,13 @@ window.__ModuleLoader__.load({
 				send,
 				t
 			]);
-			return (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Tooltip, {
-				label: pending ? t("send.pending") : t("send.label"),
-				side: "bottom",
-				children: (0, react_jsx_runtime.jsx)("button", {
-					type: "button",
-					className: EmailSendAction_module_css_default.action,
-					"aria-label": t("send.label"),
-					disabled: pending,
-					onClick,
-					children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconSendOutline16, {})
-				})
+			return (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsxs)("button", {
+				type: "button",
+				className: EmailSendAction_module_css_default.actionPill,
+				disabled: pending,
+				title: t("send.title"),
+				onClick,
+				children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconSendOutline16, { size: 14 }), (0, react_jsx_runtime.jsx)("span", { children: pending ? t("send.pending") : t("send.label") })]
 			}), failure !== null && (0, react_jsx_runtime.jsx)("span", {
 				className: EmailSendAction_module_css_default.failure,
 				role: "status",

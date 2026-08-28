@@ -1,26 +1,27 @@
-/* One assistant-message action: a 28px circular icon button matching the
-   shared IconActions chrome (same recipe as message feedback). */
+/* One assistant-message action: a pill button (icon + text) using the same
+   theme tokens as the shared IconActions chrome. */
 
-.action {
+.actionPill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
+  gap: 4px;
   height: 28px;
-  padding: 6px;
+  padding: 0 10px;
   border: none;
-  border-radius: 28px;
+  border-radius: 14px;
   background: transparent;
   color: var(--dsw-alias-label-tertiary);
+  font-size: 13px;
   cursor: pointer;
 }
 
-.action:hover {
+.actionPill:hover {
   background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-secondary);
 }
 
-.action:disabled {
+.actionPill:disabled {
   cursor: default;
   opacity: 0.4;
 }

@@ -1,15 +1,15 @@
-import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 /**
  * One assistant-message "send email" action in the message IconActions row.
- * Rendered as a circular icon button with a Tooltip, matching the shared
- * action chrome (copy / like / dislike).
+ * Rendered as a pill button with an icon + label, using the shared theme
+ * tokens so it sits consistently beside the copy / like / dislike icons.
  * @module @deepseek-ai/dsh-client-ui-email-summary/client/EmailSendAction
  */
 import { useCallback, useState } from 'react';
-import { IconSendOutline16, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives';
+import { IconSendOutline16 } from '@deepseek-ai/dsh-client-ui-primitives';
 import css from './EmailSendAction.module.css';
 /**
- * A single icon button that summarizes the current conversation and emails it.
+ * A pill button that summarizes the current conversation and emails it.
  * @param props - the injected `send` verb and the bound translator.
  */
 export function EmailSendAction({ send, t }) {
@@ -26,7 +26,6 @@ export function EmailSendAction({ send, t }) {
                 setFailure(result.error ?? t('send.failed'));
         });
     }, [pending, send, t]);
-    const label = pending ? t('send.pending') : t('send.label');
-    return (_jsxs(_Fragment, { children: [_jsx(Tooltip, { label: label, side: "bottom", children: _jsx("button", { type: "button", className: css.action, "aria-label": t('send.label'), disabled: pending, onClick: onClick, children: _jsx(IconSendOutline16, {}) }) }), failure !== null && _jsx("span", { className: css.failure, role: "status", children: failure })] }));
+    return (_jsxs(_Fragment, { children: [_jsxs("button", { type: "button", className: css.actionPill, disabled: pending, title: t('send.title'), onClick: onClick, children: [_jsx(IconSendOutline16, { size: 14 }), _jsx("span", { children: pending ? t('send.pending') : t('send.label') })] }), failure !== null && _jsx("span", { className: css.failure, role: "status", children: failure })] }));
 }
 //# sourceMappingURL=EmailSendAction.js.map
