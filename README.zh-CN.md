@@ -4,7 +4,7 @@
 
 > `26年8月26日 dsh开发笔记：Web 插件打包方案总结`
 
-> English docs: [README.md](./README.md)
+> English docs: [README.md](./README.md) · 完整文档见 [docs/](./docs/README.md)
 
 ## ✨ 功能
 

@@ -4,7 +4,7 @@ A **DeepSeek Harness (DSH) plugin** that summarizes the current conversation int
 
 > `26年8月26日 dsh开发笔记：Web plugin packaging summary`
 
-> 中文文档见 [README.zh-CN.md](./README.zh-CN.md)
+> 中文文档见 [README.zh-CN.md](./README.zh-CN.md) · 完整文档见 [docs/](./docs/README.md)
 
 ## ✨ Features
 
