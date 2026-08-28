@@ -43,7 +43,7 @@ import { settingsNamespace } from '@deepseek-ai/dsh-settings';
 import { credentialRef } from '@deepseek-ai/dsh-credentials';
 import { EMAIL_SUMMARY_SETTINGS_NAMESPACE, EmailSummarySettingsSchema, DEFAULT_EMAIL_SETTINGS, EMAIL_PROVIDER_PRESETS, presetById, } from "./spec.js";
 import { sendSmtpMail } from "./smtp.js";
-import { buildTranscript, capTranscript, generateSummary, markdownToHtml, buildEmailHtml } from "./summary.js";
+import { buildTranscript, capTranscript, generateSummary, markdownToHtml, buildEmailHtml, defaultSystemPrompt } from "./summary.js";
 export { EMAIL_PROVIDER_PRESETS, EMAIL_SUMMARY_SETTINGS_NAMESPACE, DEFAULT_EMAIL_SETTINGS } from "./spec.js";
 /** Environment-variable name for the SMTP password. */
 const SMTP_PASSWORD_ENV = 'EMAIL_SMTP_PASSWORD';
@@ -120,6 +120,7 @@ let EmailSummaryService = (() => {
                 from,
                 style: raw.style === 'brief' ? 'brief' : 'detailed',
                 defaultRecipient: raw.defaultRecipient,
+                prompt: raw.prompt,
             };
         }
         /** Summarize one session and send it; throws on failure. */
@@ -140,7 +141,7 @@ let EmailSummaryService = (() => {
             if (selection === undefined || selection.provider === '' || selection.model === '') {
                 throw new Error('无法解析可用的 LLM 模型（provider/model）。');
             }
-            const summary = await generateSummary(this.ctx.llm, selection.provider, selection.model, capTranscript(transcript.text, 20000), style ?? mail.style);
+            const summary = await generateSummary(this.ctx.llm, selection.provider, selection.model, capTranscript(transcript.text, 20000), style ?? mail.style, mail.prompt);
             const dateLabel = formatChineseDate(new Date());
             const resolvedSubject = subject && subject !== ''
                 ? subject
@@ -210,6 +211,7 @@ let EmailSummaryService = (() => {
                 settings: raw,
                 presets: [...EMAIL_PROVIDER_PRESETS],
                 configured: mail.host !== '' && mail.from !== '',
+                defaultPrompt: defaultSystemPrompt(raw.style === 'brief' ? 'brief' : 'detailed'),
             };
         }
         /** Persist a partial settings patch. */

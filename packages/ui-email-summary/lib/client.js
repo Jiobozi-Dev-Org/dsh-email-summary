@@ -221,6 +221,16 @@ window.__ModuleLoader__.load({
 			cursor: "pointer"
 		};
 		const statusText = { fontSize: 13 };
+		const linkBtn = {
+			padding: "4px 8px",
+			borderRadius: 6,
+			border: "1px solid rgba(0,0,0,0.15)",
+			background: "transparent",
+			color: "#2563eb",
+			fontSize: 12,
+			cursor: "pointer",
+			alignSelf: "flex-start"
+		};
 		/** A section header: the SMTP fields or the summary preference. */
 		function FieldGroup({ label, children }) {
 			return (0, react_jsx_runtime.jsxs)("div", {
@@ -244,6 +254,7 @@ window.__ModuleLoader__.load({
 			const [settings, setSettings] = (0, react.useState)(null);
 			const [presets, setPresets] = (0, react.useState)([]);
 			const [password, setPassword] = (0, react.useState)("");
+			const [defaultPrompt, setDefaultPrompt] = (0, react.useState)("");
 			const [saving, setSaving] = (0, react.useState)(false);
 			const [message, setMessage] = (0, react.useState)(null);
 			(0, react.useEffect)(() => {
@@ -252,6 +263,7 @@ window.__ModuleLoader__.load({
 					if (!alive) return;
 					setSettings(result.settings);
 					setPresets(result.presets);
+					setDefaultPrompt(result.defaultPrompt);
 				});
 				return () => {
 					alive = false;
@@ -273,6 +285,12 @@ window.__ModuleLoader__.load({
 				});
 				else patch({ provider: id });
 			}, [presets, patch]);
+			const loadDefaultPrompt = (0, react.useCallback)(() => {
+				if (defaultPrompt !== "") setSettings((current) => current === null ? current : {
+					...current,
+					prompt: defaultPrompt
+				});
+			}, [defaultPrompt]);
 			const onSave = (0, react.useCallback)(() => {
 				if (settings === null || saving) return;
 				setSaving(true);
@@ -469,6 +487,34 @@ window.__ModuleLoader__.load({
 								children: t("settings.styleHint")
 							})]
 						}),
+						(0, react_jsx_runtime.jsxs)(FieldGroup, {
+							label: t("settings.prompt"),
+							children: [
+								(0, react_jsx_runtime.jsx)("textarea", {
+									style: {
+										...input,
+										minHeight: 120,
+										resize: "vertical",
+										fontFamily: "ui-monospace,Consolas,monospace",
+										fontSize: 13,
+										lineHeight: 1.5
+									},
+									value: settings.prompt,
+									placeholder: t("settings.promptPlaceholder"),
+									onChange: (event) => patch({ prompt: event.target.value })
+								}),
+								(0, react_jsx_runtime.jsx)("div", {
+									style: fieldHint,
+									children: t("settings.promptHint")
+								}),
+								(0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									style: linkBtn,
+									onClick: loadDefaultPrompt,
+									children: t("settings.loadDefaultPrompt")
+								})
+							]
+						}),
 						(0, react_jsx_runtime.jsxs)("div", {
 							style: footer,
 							children: [(0, react_jsx_runtime.jsx)("button", {
@@ -518,6 +564,10 @@ window.__ModuleLoader__.load({
 			"settings.recipientHint": "「结束后发送」和未指定收件人时使用",
 			"settings.style": "总结详略",
 			"settings.styleHint": "详细版更完整，简短版更凝练",
+			"settings.prompt": "总结提示词",
+			"settings.promptPlaceholder": "留空则使用所选样式的默认提示词",
+			"settings.promptHint": "留空则用「详略」对应的默认提示词；点「载入默认」可查看并修改默认提示词",
+			"settings.loadDefaultPrompt": "载入默认提示词",
 			"settings.detailed": "详细",
 			"settings.brief": "简短",
 			"settings.save": "保存",
@@ -553,6 +603,10 @@ window.__ModuleLoader__.load({
 			"settings.recipientHint": "Used by \"send when done\" and when no recipient is given",
 			"settings.style": "Summary detail",
 			"settings.styleHint": "Detailed is fuller; brief is more concise",
+			"settings.prompt": "Summary prompt",
+			"settings.promptPlaceholder": "Leave blank to use the default for the selected style",
+			"settings.promptHint": "Blank uses the default for the selected detail level; click \"Load default\" to view and edit it",
+			"settings.loadDefaultPrompt": "Load default prompt",
 			"settings.detailed": "Detailed",
 			"settings.brief": "Brief",
 			"settings.save": "Save",

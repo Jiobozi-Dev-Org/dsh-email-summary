@@ -23,7 +23,7 @@ import {
   presetById,
 } from './spec.ts'
 import { sendSmtpMail } from './smtp.ts'
-import { buildTranscript, capTranscript, generateSummary, markdownToHtml, buildEmailHtml } from './summary.ts'
+import { buildTranscript, capTranscript, generateSummary, markdownToHtml, buildEmailHtml, defaultSystemPrompt } from './summary.ts'
 import type {
   ArmAutosendRequest,
   ArmAutosendResult,
@@ -64,6 +64,7 @@ interface ResolvedMail {
   from: string
   style: 'brief' | 'detailed'
   defaultRecipient: string
+  prompt: string
 }
 
 /** Host service for conversation summarization + SMTP delivery. */
@@ -114,6 +115,7 @@ export class EmailSummaryService extends TypertRemoteService {
       from,
       style: raw.style === 'brief' ? 'brief' : 'detailed',
       defaultRecipient: raw.defaultRecipient,
+      prompt: raw.prompt,
     }
   }
 
@@ -145,6 +147,7 @@ export class EmailSummaryService extends TypertRemoteService {
       selection.model,
       capTranscript(transcript.text, 20000),
       style ?? mail.style,
+      mail.prompt,
     )
 
     const dateLabel = formatChineseDate(new Date())
@@ -217,13 +220,14 @@ export class EmailSummaryService extends TypertRemoteService {
 
   /** Read the raw persisted settings (the surface edits these). */
   @Remote('getSettings')
-  async getSettings(): Promise<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean }> {
+  async getSettings(): Promise<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean; defaultPrompt: string }> {
     const raw = this.settingsScope.get() ?? DEFAULT_EMAIL_SETTINGS
     const mail = await this.resolveMail()
     return {
       settings: raw,
       presets: [...EMAIL_PROVIDER_PRESETS],
       configured: mail.host !== '' && mail.from !== '',
+      defaultPrompt: defaultSystemPrompt(raw.style === 'brief' ? 'brief' : 'detailed'),
     }
   }
 

@@ -23,7 +23,8 @@ const DEFAULT_EMAIL_SETTINGS = {
 	username: "",
 	from: "",
 	defaultRecipient: "",
-	style: "detailed"
+	style: "detailed",
+	prompt: ""
 };
 /** Settings schema (strings/numbers only; enums validated at read time). */
 const EmailSummarySettingsSchema = z.object({
@@ -34,7 +35,8 @@ const EmailSummarySettingsSchema = z.object({
 	username: z.string(),
 	from: z.string(),
 	defaultRecipient: z.string(),
-	style: z.string()
+	style: z.string(),
+	prompt: z.string()
 });
 /** SMTP provider presets: Gmail / QQ / 163 / 126 / Outlook + custom. */
 const EMAIL_PROVIDER_PRESETS = Object.freeze([
@@ -450,8 +452,8 @@ function capTranscript(text, max) {
 	if (text.length <= max) return text;
 	return `${text.slice(0, 1500)}\n\n…[中间内容已省略]…\n\n${text.slice(-(max - 1500 - 30))}`;
 }
-/** System instruction for the summarization call. */
-function systemPrompt(style) {
+/** Default system instruction for the summarization call. */
+function defaultSystemPrompt(style) {
 	return [
 		"你是专业的对话总结助手。请把下面提供的对话记录总结成结构清晰的内容。",
 		"要求：",
@@ -467,7 +469,7 @@ function systemPrompt(style) {
 * Generate one summary through an auxiliary LLM call.
 * @returns the short title and the Markdown body.
 */
-async function generateSummary(llm, provider, model, transcript, style, signal) {
+async function generateSummary(llm, provider, model, transcript, style, customPrompt, signal) {
 	const options = deepFreeze({
 		provider,
 		model,
@@ -481,7 +483,7 @@ async function generateSummary(llm, provider, model, transcript, style, signal) 
 				plugin: "dsh-email-summary"
 			}
 		})],
-		system: systemPrompt(style),
+		system: customPrompt !== void 0 && customPrompt.trim() !== "" ? customPrompt.trim() : defaultSystemPrompt(style),
 		maxTokens: style === "brief" ? 1e3 : 2500,
 		...signal === void 0 ? {} : { signal }
 	});
@@ -769,7 +771,8 @@ let EmailSummaryService = (() => {
 				password,
 				from,
 				style: raw.style === "brief" ? "brief" : "detailed",
-				defaultRecipient: raw.defaultRecipient
+				defaultRecipient: raw.defaultRecipient,
+				prompt: raw.prompt
 			};
 		}
 		/** Summarize one session and send it; throws on failure. */
@@ -783,7 +786,7 @@ let EmailSummaryService = (() => {
 			if (transcript.text.trim() === "") throw new Error("当前会话没有可总结的对话内容。");
 			const selection = this.ctx.agentDefaultModel.currentSelection();
 			if (selection === void 0 || selection.provider === "" || selection.model === "") throw new Error("无法解析可用的 LLM 模型（provider/model）。");
-			const summary = await generateSummary(this.ctx.llm, selection.provider, selection.model, capTranscript(transcript.text, 2e4), style ?? mail.style);
+			const summary = await generateSummary(this.ctx.llm, selection.provider, selection.model, capTranscript(transcript.text, 2e4), style ?? mail.style, mail.prompt);
 			const dateLabel = formatChineseDate(/* @__PURE__ */ new Date());
 			const resolvedSubject = subject && subject !== "" ? subject : `${dateLabel}dsh开发笔记：${summary.title}`;
 			const html = buildEmailHtml(summary.title, dateLabel, markdownToHtml(summary.markdown));
@@ -848,7 +851,8 @@ let EmailSummaryService = (() => {
 			return {
 				settings: raw,
 				presets: [...EMAIL_PROVIDER_PRESETS],
-				configured: mail.host !== "" && mail.from !== ""
+				configured: mail.host !== "" && mail.from !== "",
+				defaultPrompt: defaultSystemPrompt(raw.style === "brief" ? "brief" : "detailed")
 			};
 		}
 		/** Persist a partial settings patch. */

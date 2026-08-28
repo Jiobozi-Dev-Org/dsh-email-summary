@@ -52,8 +52,8 @@ export function capTranscript(text, max) {
     const tail = text.slice(-(max - 1500 - 30));
     return `${head}\n\n…[中间内容已省略]…\n\n${tail}`;
 }
-/** System instruction for the summarization call. */
-function systemPrompt(style) {
+/** Default system instruction for the summarization call. */
+export function defaultSystemPrompt(style) {
     const brief = style === 'brief';
     return [
         '你是专业的对话总结助手。请把下面提供的对话记录总结成结构清晰的内容。',
@@ -70,16 +70,19 @@ function systemPrompt(style) {
  * Generate one summary through an auxiliary LLM call.
  * @returns the short title and the Markdown body.
  */
-export async function generateSummary(llm, provider, model, transcript, style, signal) {
+export async function generateSummary(llm, provider, model, transcript, style, customPrompt, signal) {
     const messages = [createUserMessage({
             content: [{ type: 'text', text: `以下是需要总结的对话记录：\n\n${transcript}` }],
             source: { kind: 'plugin', plugin: 'dsh-email-summary' },
         })];
+    const resolvedPrompt = customPrompt !== undefined && customPrompt.trim() !== ''
+        ? customPrompt.trim()
+        : defaultSystemPrompt(style);
     const options = deepFreeze({
         provider,
         model,
         messages,
-        system: systemPrompt(style),
+        system: resolvedPrompt,
         maxTokens: style === 'brief' ? 1000 : 2500,
         ...(signal === undefined ? {} : { signal }),
     });

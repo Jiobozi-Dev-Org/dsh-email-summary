@@ -9,7 +9,7 @@ import type { SessionId } from '@deepseek-ai/dsh-session/types'
 declare module '@deepseek-ai/dsh-typert-protocol' {
   interface TypertRemoteNamespace$656d61696c53756d6d617279 {
     armAutosend: (request: ArmAutosendRequest) => Promise<RemoteResult<ArmAutosendResult>>
-    getSettings: () => Promise<RemoteResult<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean; }>>
+    getSettings: () => Promise<RemoteResult<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean; defaultPrompt: string; }>>
     saveSettings: (request: { patch: Partial<EmailSummarySettings>; }) => Promise<RemoteResult<{ ok: boolean; error?: string; }>>
     sendNow: (request: SendEmailRequest) => Promise<RemoteResult<SendEmailResult>>
     setPassword: (request: { password: string; }) => Promise<RemoteResult<{ ok: boolean; error?: string; }>>
@@ -17,7 +17,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
   }
   interface TypertRemoteMap {
     'emailSummary/armAutosend': (request: ArmAutosendRequest) => Promise<RemoteResult<ArmAutosendResult>>
-    'emailSummary/getSettings': () => Promise<RemoteResult<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean; }>>
+    'emailSummary/getSettings': () => Promise<RemoteResult<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean; defaultPrompt: string; }>>
     'emailSummary/saveSettings': (request: { patch: Partial<EmailSummarySettings>; }) => Promise<RemoteResult<{ ok: boolean; error?: string; }>>
     'emailSummary/sendNow': (request: SendEmailRequest) => Promise<RemoteResult<SendEmailResult>>
     'emailSummary/setPassword': (request: { password: string; }) => Promise<RemoteResult<{ ok: boolean; error?: string; }>>

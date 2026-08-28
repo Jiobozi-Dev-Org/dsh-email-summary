@@ -15,6 +15,7 @@ export const DEFAULT_EMAIL_SETTINGS = {
     from: '',
     defaultRecipient: '',
     style: 'detailed',
+    prompt: '',
 };
 /** Settings schema (strings/numbers only; enums validated at read time). */
 export const EmailSummarySettingsSchema = z.object({
@@ -26,6 +27,7 @@ export const EmailSummarySettingsSchema = z.object({
     from: z.string(),
     defaultRecipient: z.string(),
     style: z.string(),
+    prompt: z.string(),
 });
 /** SMTP provider presets: Gmail / QQ / 163 / 126 / Outlook + custom. */
 export const EMAIL_PROVIDER_PRESETS = Object.freeze([

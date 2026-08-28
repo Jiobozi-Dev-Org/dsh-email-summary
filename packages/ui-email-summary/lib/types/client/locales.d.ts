@@ -27,6 +27,10 @@ export declare const zh: {
     'settings.recipientHint': string;
     'settings.style': string;
     'settings.styleHint': string;
+    'settings.prompt': string;
+    'settings.promptPlaceholder': string;
+    'settings.promptHint': string;
+    'settings.loadDefaultPrompt': string;
     'settings.detailed': string;
     'settings.brief': string;
     'settings.save': string;
@@ -70,6 +74,10 @@ export declare const en: {
     'settings.recipientHint': string;
     'settings.style': string;
     'settings.styleHint': string;
+    'settings.prompt': string;
+    'settings.promptPlaceholder': string;
+    'settings.promptHint': string;
+    'settings.loadDefaultPrompt': string;
     'settings.detailed': string;
     'settings.brief': string;
     'settings.save': string;

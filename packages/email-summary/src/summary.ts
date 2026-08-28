@@ -58,8 +58,8 @@ export function capTranscript(text: string, max: number): string {
   return `${head}\n\n…[中间内容已省略]…\n\n${tail}`
 }
 
-/** System instruction for the summarization call. */
-function systemPrompt(style: EmailSummaryStyle): string {
+/** Default system instruction for the summarization call. */
+export function defaultSystemPrompt(style: EmailSummaryStyle): string {
   const brief = style === 'brief'
   return [
     '你是专业的对话总结助手。请把下面提供的对话记录总结成结构清晰的内容。',
@@ -94,17 +94,21 @@ export async function generateSummary(
   model: string,
   transcript: string,
   style: EmailSummaryStyle,
+  customPrompt?: string,
   signal?: AbortSignal,
 ): Promise<SummaryResult> {
   const messages: Message[] = [createUserMessage({
     content: [{ type: 'text', text: `以下是需要总结的对话记录：\n\n${transcript}` }],
     source: { kind: 'plugin', plugin: 'dsh-email-summary' },
   })]
+  const resolvedPrompt = customPrompt !== undefined && customPrompt.trim() !== ''
+    ? customPrompt.trim()
+    : defaultSystemPrompt(style)
   const options: GenerateOptions = deepFreeze({
     provider,
     model,
     messages,
-    system: systemPrompt(style),
+    system: resolvedPrompt,
     maxTokens: style === 'brief' ? 1000 : 2500,
     ...(signal === undefined ? {} : { signal }),
   })

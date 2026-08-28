@@ -41,6 +41,10 @@ const saveBtn: CSSProperties = {
   fontSize: 14, fontWeight: 500, cursor: 'pointer',
 }
 const statusText: CSSProperties = { fontSize: 13 }
+const linkBtn: CSSProperties = {
+  padding: '4px 8px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.15)',
+  background: 'transparent', color: '#2563eb', fontSize: 12, cursor: 'pointer', alignSelf: 'flex-start',
+}
 
 /** A section header: the SMTP fields or the summary preference. */
 function FieldGroup({ label, children }: { label: string; children: ReactNode }) {
@@ -61,6 +65,7 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
   const [settings, setSettings] = useState<EmailSummarySettings | null>(null)
   const [presets, setPresets] = useState<EmailProviderPreset[]>([])
   const [password, setPassword] = useState('')
+  const [defaultPrompt, setDefaultPrompt] = useState('')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -70,6 +75,7 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
       if (!alive) return
       setSettings(result.settings)
       setPresets(result.presets)
+      setDefaultPrompt(result.defaultPrompt)
     })
     return () => { alive = false }
   }, [api])
@@ -86,6 +92,12 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
       patch({ provider: id })
     }
   }, [presets, patch])
+
+  const loadDefaultPrompt = useCallback(() => {
+    if (defaultPrompt !== '') {
+      setSettings(current => (current === null ? current : { ...current, prompt: defaultPrompt }))
+    }
+  }, [defaultPrompt])
 
   const onSave = useCallback(() => {
     if (settings === null || saving) return
@@ -197,6 +209,19 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
               <option value="brief">{t('settings.brief')}</option>
             </select>
             <div style={fieldHint}>{t('settings.styleHint')}</div>
+          </FieldGroup>
+
+          <FieldGroup label={t('settings.prompt')}>
+            <textarea
+              style={{ ...input, minHeight: 120, resize: 'vertical', fontFamily: 'ui-monospace,Consolas,monospace', fontSize: 13, lineHeight: 1.5 }}
+              value={settings.prompt}
+              placeholder={t('settings.promptPlaceholder')}
+              onChange={event => patch({ prompt: event.target.value })}
+            />
+            <div style={fieldHint}>{t('settings.promptHint')}</div>
+            <button type="button" style={linkBtn} onClick={loadDefaultPrompt}>
+              {t('settings.loadDefaultPrompt')}
+            </button>
           </FieldGroup>
 
           <div style={footer}>

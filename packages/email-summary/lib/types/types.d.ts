@@ -40,6 +40,8 @@ export interface EmailSummarySettings {
     defaultRecipient: string;
     /** Summary detail level (`brief` | `detailed`). */
     style: string;
+    /** Custom system prompt for the summarizer; empty uses the style default. */
+    prompt: string;
 }
 /** Send-one-summary request from the Client. */
 export interface SendEmailRequest {

@@ -27,7 +27,7 @@ export interface EmailSummaryApi {
   }): Promise<SendEmailResult>
   armAutosend(request: { sessionId: SessionId; enabled: boolean; recipient?: string }): Promise<{ ok: boolean; armed: boolean }>
   status(request: { sessionId: SessionId }): Promise<{ configured: boolean; defaultRecipient: string; armed: boolean; presets: EmailProviderPreset[] }>
-  getSettings(): Promise<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean }>
+  getSettings(): Promise<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean; defaultPrompt: string }>
   saveSettings(request: { patch: Partial<EmailSummarySettings> }): Promise<{ ok: boolean; error?: string }>
   setPassword(request: { password: string }): Promise<{ ok: boolean; error?: string }>
 }

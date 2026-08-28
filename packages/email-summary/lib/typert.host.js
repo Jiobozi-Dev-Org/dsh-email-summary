@@ -20,6 +20,7 @@ const _deepseek_ai_dsh_email_summary_emailSummary_getSettings_result$schema = z.
   'from': z.string(),
   'defaultRecipient': z.string(),
   'style': z.string(),
+  'prompt': z.string(),
 }),
   'presets': z.array(z.object({
   'id': z.union([z.literal("gmail"), z.literal("qq"), z.literal("163"), z.literal("126"), z.literal("outlook"), z.literal("custom")]),
@@ -29,6 +30,7 @@ const _deepseek_ai_dsh_email_summary_emailSummary_getSettings_result$schema = z.
   'secure': z.union([z.literal("starttls"), z.literal("ssl"), z.literal("none")]),
 })),
   'configured': z.boolean(),
+  'defaultPrompt': z.string(),
 })
 const _deepseek_ai_dsh_email_summary_emailSummary_saveSettings_parameter_0$schema = z.object({
   'patch': z.object({
@@ -40,6 +42,7 @@ const _deepseek_ai_dsh_email_summary_emailSummary_saveSettings_parameter_0$schem
   'from': z.string().optional(),
   'defaultRecipient': z.string().optional(),
   'style': z.string().optional(),
+  'prompt': z.string().optional(),
 }),
 })
 const _deepseek_ai_dsh_email_summary_emailSummary_saveSettings_result$schema = z.object({
@@ -113,7 +116,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#ArmAutosendResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_armAutosend_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":197,"column":3},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":200,"column":3},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/getSettings',
@@ -128,7 +131,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/getSettings:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_getSettings_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":220,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":223,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/saveSettings',
@@ -153,7 +156,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/saveSettings:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_saveSettings_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":232,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":236,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/sendNow',
@@ -178,7 +181,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#SendEmailResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_sendNow_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":180,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":183,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/setPassword',
@@ -203,7 +206,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/setPassword:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_setPassword_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":246,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":250,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/status',
@@ -228,7 +231,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#EmailStatusResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_status_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":208,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":211,"column":9},
     },
   ],
   model: {
@@ -265,7 +268,7 @@ export const TYPERT = {
           {
             "kind": "method",
             "name": "getSettings",
-            "signature": "@Remote('getSettings') async getSettings(): Promise<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean }>",
+            "signature": "@Remote('getSettings') async getSettings(): Promise<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean; defaultPrompt: string }>",
             "summary": "Read the raw persisted settings (the surface edits these).",
             "jsDoc": "/** Read the raw persisted settings (the surface edits these). */"
           },
@@ -315,7 +318,7 @@ export const TYPERT = {
           },
           {
             "name": "EmailSummarySettings",
-            "declaration": "export interface EmailSummarySettings {\n    provider: string;\n    smtpHost: string;\n    smtpPort: number;\n    secure: string;\n    username: string;\n    from: string;\n    defaultRecipient: string;\n    style: string;\n}"
+            "declaration": "export interface EmailSummarySettings {\n    provider: string;\n    smtpHost: string;\n    smtpPort: number;\n    secure: string;\n    username: string;\n    from: string;\n    defaultRecipient: string;\n    style: string;\n    prompt: string;\n}"
           },
           {
             "name": "EmailSummaryStyle",
