@@ -1,7 +1,7 @@
 /**
  * Email-summary plugin configuration card (shown in Settings → Plugins).
- * Collapsed by default, like the built-in plugin cards; expanding reveals the
- * SMTP + summary form, whose fields are persisted through the Host Remote.
+ * Collapsed by default, mirroring the shared PluginCard chrome so it sits
+ * beside the built-in shell / agent-loop / web-search cards identically.
  * @module @deepseek-ai/dsh-client-ui-email-summary/client/EmailSettingsSection
  */
 import type { InjectFace } from '@deepseek-ai/dsh-client-ui-slots';

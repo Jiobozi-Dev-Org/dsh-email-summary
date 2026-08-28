@@ -1,26 +1,14 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 /**
  * Email-summary plugin configuration card (shown in Settings → Plugins).
- * Collapsed by default, like the built-in plugin cards; expanding reveals the
- * SMTP + summary form, whose fields are persisted through the Host Remote.
+ * Collapsed by default, mirroring the shared PluginCard chrome so it sits
+ * beside the built-in shell / agent-loop / web-search cards identically.
  * @module @deepseek-ai/dsh-client-ui-email-summary/client/EmailSettingsSection
  */
 import { useCallback, useEffect, useState } from 'react';
-const card = { margin: 0, padding: 0, listStyle: 'none' };
-const headerBtn = {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-    width: '100%', padding: '14px 16px', border: 'none', background: 'transparent',
-    cursor: 'pointer', textAlign: 'left', color: 'inherit',
-};
-const headerText = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 };
-const title = { fontWeight: 600, fontSize: 15 };
-const desc = { fontSize: 12, opacity: 0.65 };
-const chevron = { fontSize: 12, opacity: 0.6, flexShrink: 0 };
-const body = {
-    padding: '4px 16px 16px', display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 560,
-};
+import { IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives';
+import css from './EmailCard.module.css';
 const groupLabel = { fontSize: 12, fontWeight: 600, color: '#2563eb', marginBottom: 2 };
-const fieldRow = { display: 'flex', flexDirection: 'column', gap: 4 };
 const fieldLabel = { fontSize: 13, fontWeight: 500 };
 const fieldHint = { fontSize: 11, opacity: 0.55 };
 const input = {
@@ -28,17 +16,7 @@ const input = {
     fontSize: 14, background: '#fff', width: '100%',
 };
 const inlineRow = { display: 'flex', gap: 14 };
-const inlineCol = { ...fieldRow, flex: 1 };
-const footer = { display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 };
-const saveBtn = {
-    padding: '8px 18px', borderRadius: 6, border: 'none', background: '#2563eb', color: '#fff',
-    fontSize: 14, fontWeight: 500, cursor: 'pointer',
-};
-const statusText = { fontSize: 13 };
-const linkBtn = {
-    padding: '4px 8px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.15)',
-    background: 'transparent', color: '#2563eb', fontSize: 12, cursor: 'pointer', alignSelf: 'flex-start',
-};
+const inlineCol = { display: 'flex', flexDirection: 'column', gap: 4, flex: 1 };
 /** A section header: the SMTP fields or the summary preference. */
 function FieldGroup({ label, children }) {
     return (_jsxs("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 }, children: [_jsx("div", { style: groupLabel, children: label }), children] }));
@@ -118,16 +96,33 @@ export function EmailSettingsSection({ api, t }) {
             const def = (defaultPrompts[style] ?? '').trim();
             const promptText = (settings.prompt ?? '').trim();
             const customPrompt = promptText === '' || promptText === def ? '' : settings.prompt;
-            const patch = { ...settings, prompt: customPrompt };
-            const saved = await api.saveSettings({ patch });
+            const patchValue = { ...settings, prompt: customPrompt };
+            const saved = await api.saveSettings({ patch: patchValue });
             if (password !== '')
                 await api.setPassword({ password });
             setSaving(false);
             setMessage(saved.ok ? t('settings.saved') : (saved.error ?? t('settings.error')));
         })();
     }, [settings, saving, password, defaultPrompts, api, t]);
+    const discard = useCallback(() => {
+        if (saving)
+            return;
+        setMessage(null);
+        void api.getSettings().then((result) => {
+            const style = result.settings.style === 'brief' ? 'brief' : 'detailed';
+            setSettings({
+                ...result.settings,
+                prompt: (result.settings.prompt ?? '').trim() !== ''
+                    ? result.settings.prompt
+                    : result.defaultPrompts[style],
+            });
+            setPresets(result.presets);
+            setDefaultPrompts(result.defaultPrompts);
+            setPassword('');
+        });
+    }, [saving, api]);
     if (settings === null)
         return null;
-    return (_jsxs("li", { style: card, children: [_jsxs("button", { type: "button", style: headerBtn, "aria-expanded": open, onClick: () => { setOpen(!open); }, children: [_jsxs("span", { style: headerText, children: [_jsx("span", { style: title, children: t('nav') }), _jsx("span", { style: desc, children: t('desc') })] }), _jsx("span", { style: chevron, children: open ? '▾' : '▸' })] }), open && (_jsxs("div", { style: body, children: [_jsx(FieldGroup, { label: t('settings.provider'), children: _jsx("select", { style: input, value: settings.provider, onChange: event => onProvider(event.target.value), children: presets.map(preset => _jsx("option", { value: preset.id, children: preset.label }, preset.id)) }) }), _jsxs(FieldGroup, { label: t('settings.host'), children: [_jsx("input", { style: input, value: settings.smtpHost, onChange: event => patch({ smtpHost: event.target.value }) }), _jsx("div", { style: fieldHint, children: t('settings.hostHint') })] }), _jsxs("div", { style: inlineRow, children: [_jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.port') }), _jsx("input", { style: input, type: "number", value: settings.smtpPort, onChange: event => patch({ smtpPort: Number(event.target.value) }) }), _jsx("span", { style: fieldHint, children: t('settings.portHint') })] }), _jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.secure') }), _jsxs("select", { style: input, value: settings.secure, onChange: event => patch({ secure: event.target.value }), children: [_jsx("option", { value: "starttls", children: "STARTTLS" }), _jsx("option", { value: "ssl", children: "SSL" }), _jsx("option", { value: "none", children: "None" })] }), _jsx("span", { style: fieldHint, children: t('settings.secureHint') })] })] }), _jsxs(FieldGroup, { label: t('settings.username'), children: [_jsx("input", { style: input, value: settings.username, onChange: event => patch({ username: event.target.value }) }), _jsx("div", { style: fieldHint, children: t('settings.usernameHint') })] }), _jsx(FieldGroup, { label: t('settings.password'), children: _jsx("input", { style: input, type: "password", value: password, placeholder: t('settings.passwordHint'), onChange: event => setPassword(event.target.value) }) }), _jsxs("div", { style: inlineRow, children: [_jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.from') }), _jsx("input", { style: input, value: settings.from, onChange: event => patch({ from: event.target.value }) }), _jsx("span", { style: fieldHint, children: t('settings.fromHint') })] }), _jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.recipient') }), _jsx("input", { style: input, value: settings.defaultRecipient, onChange: event => patch({ defaultRecipient: event.target.value }) }), _jsx("span", { style: fieldHint, children: t('settings.recipientHint') })] })] }), _jsxs(FieldGroup, { label: t('settings.style'), children: [_jsxs("select", { style: input, value: settings.style, onChange: event => onStyleChange(event.target.value), children: [_jsx("option", { value: "detailed", children: t('settings.detailed') }), _jsx("option", { value: "brief", children: t('settings.brief') })] }), _jsx("div", { style: fieldHint, children: t('settings.styleHint') })] }), _jsxs(FieldGroup, { label: t('settings.prompt'), children: [_jsx("textarea", { style: { ...input, minHeight: 120, resize: 'vertical', fontFamily: 'ui-monospace,Consolas,monospace', fontSize: 13, lineHeight: 1.5 }, value: settings.prompt, placeholder: t('settings.promptPlaceholder'), onChange: event => patch({ prompt: event.target.value }) }), _jsx("div", { style: fieldHint, children: t('settings.promptHint') }), _jsx("button", { type: "button", style: linkBtn, onClick: restoreDefaultPrompt, children: t('settings.restoreDefaultPrompt') })] }), _jsxs("div", { style: footer, children: [_jsx("button", { type: "button", style: saveBtn, onClick: onSave, disabled: saving, children: saving ? t('settings.saving') : t('settings.save') }), message !== null && _jsx("span", { style: statusText, role: "status", children: message })] })] }))] }));
+    return (_jsxs("li", { className: open ? `${css.card} ${css.cardOpen}` : css.card, children: [_jsxs("button", { type: "button", className: css.header, "aria-expanded": open, onClick: () => { setOpen(!open); }, children: [_jsxs("span", { className: css.headText, children: [_jsx("span", { className: css.name, children: t('nav') }), _jsx("span", { className: css.description, children: t('desc') })] }), _jsx(IconChevronDownOutline14, { className: open ? `${css.chevron} ${css.chevronOpen}` : css.chevron })] }), open && (_jsxs("div", { className: css.body, children: [_jsx(FieldGroup, { label: t('settings.provider'), children: _jsx("select", { style: input, value: settings.provider, onChange: event => onProvider(event.target.value), children: presets.map(preset => _jsx("option", { value: preset.id, children: preset.label }, preset.id)) }) }), _jsxs(FieldGroup, { label: t('settings.host'), children: [_jsx("input", { style: input, value: settings.smtpHost, onChange: event => patch({ smtpHost: event.target.value }) }), _jsx("div", { style: fieldHint, children: t('settings.hostHint') })] }), _jsxs("div", { style: inlineRow, children: [_jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.port') }), _jsx("input", { style: input, type: "number", value: settings.smtpPort, onChange: event => patch({ smtpPort: Number(event.target.value) }) }), _jsx("span", { style: fieldHint, children: t('settings.portHint') })] }), _jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.secure') }), _jsxs("select", { style: input, value: settings.secure, onChange: event => patch({ secure: event.target.value }), children: [_jsx("option", { value: "starttls", children: "STARTTLS" }), _jsx("option", { value: "ssl", children: "SSL" }), _jsx("option", { value: "none", children: "None" })] }), _jsx("span", { style: fieldHint, children: t('settings.secureHint') })] })] }), _jsxs(FieldGroup, { label: t('settings.username'), children: [_jsx("input", { style: input, value: settings.username, onChange: event => patch({ username: event.target.value }) }), _jsx("div", { style: fieldHint, children: t('settings.usernameHint') })] }), _jsx(FieldGroup, { label: t('settings.password'), children: _jsx("input", { style: input, type: "password", value: password, placeholder: t('settings.passwordHint'), onChange: event => setPassword(event.target.value) }) }), _jsxs("div", { style: inlineRow, children: [_jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.from') }), _jsx("input", { style: input, value: settings.from, onChange: event => patch({ from: event.target.value }) }), _jsx("span", { style: fieldHint, children: t('settings.fromHint') })] }), _jsxs("label", { style: inlineCol, children: [_jsx("span", { style: fieldLabel, children: t('settings.recipient') }), _jsx("input", { style: input, value: settings.defaultRecipient, onChange: event => patch({ defaultRecipient: event.target.value }) }), _jsx("span", { style: fieldHint, children: t('settings.recipientHint') })] })] }), _jsxs(FieldGroup, { label: t('settings.style'), children: [_jsxs("select", { style: input, value: settings.style, onChange: event => onStyleChange(event.target.value), children: [_jsx("option", { value: "detailed", children: t('settings.detailed') }), _jsx("option", { value: "brief", children: t('settings.brief') })] }), _jsx("div", { style: fieldHint, children: t('settings.styleHint') })] }), _jsxs(FieldGroup, { label: t('settings.prompt'), children: [_jsx("textarea", { style: { ...input, minHeight: 120, resize: 'vertical', fontFamily: 'ui-monospace,Consolas,monospace', fontSize: 13, lineHeight: 1.5 }, value: settings.prompt, placeholder: t('settings.promptPlaceholder'), onChange: event => patch({ prompt: event.target.value }) }), _jsx("div", { style: fieldHint, children: t('settings.promptHint') }), _jsx("button", { type: "button", style: { padding: '4px 8px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.15)', background: 'transparent', color: '#2563eb', fontSize: 12, cursor: 'pointer', alignSelf: 'flex-start' }, onClick: restoreDefaultPrompt, children: t('settings.restoreDefaultPrompt') })] }), _jsxs("div", { className: css.footer, children: [message !== null && _jsx("span", { className: css.failed, role: "status", children: message }), _jsx("button", { type: "button", className: css.discard, onClick: discard, disabled: saving, children: t('settings.discard') }), _jsx("button", { type: "button", className: css.save, onClick: onSave, disabled: saving, children: saving ? t('settings.saving') : t('settings.save') })] })] }))] }));
 }
 //# sourceMappingURL=EmailSettingsSection.js.map

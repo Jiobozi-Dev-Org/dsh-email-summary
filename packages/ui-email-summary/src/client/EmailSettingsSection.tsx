@@ -1,32 +1,20 @@
 /**
  * Email-summary plugin configuration card (shown in Settings → Plugins).
- * Collapsed by default, like the built-in plugin cards; expanding reveals the
- * SMTP + summary form, whose fields are persisted through the Host Remote.
+ * Collapsed by default, mirroring the shared PluginCard chrome so it sits
+ * beside the built-in shell / agent-loop / web-search cards identically.
  * @module @deepseek-ai/dsh-client-ui-email-summary/client/EmailSettingsSection
  */
 
 import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace } from '@deepseek-ai/dsh-client-ui-slots'
 import type { EmailProviderPreset, EmailSummarySettings } from '@deepseek-ai/dsh-email-summary/types'
 import type { EmailSettingsInjected } from './types.ts'
+import css from './EmailCard.module.css'
 
 export type EmailSettingsSectionProps = InjectFace<EmailSettingsInjected>
 
-const card: CSSProperties = { margin: 0, padding: 0, listStyle: 'none' }
-const headerBtn: CSSProperties = {
-  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-  width: '100%', padding: '14px 16px', border: 'none', background: 'transparent',
-  cursor: 'pointer', textAlign: 'left', color: 'inherit',
-}
-const headerText: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }
-const title: CSSProperties = { fontWeight: 600, fontSize: 15 }
-const desc: CSSProperties = { fontSize: 12, opacity: 0.65 }
-const chevron: CSSProperties = { fontSize: 12, opacity: 0.6, flexShrink: 0 }
-const body: CSSProperties = {
-  padding: '4px 16px 16px', display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 560,
-}
 const groupLabel: CSSProperties = { fontSize: 12, fontWeight: 600, color: '#2563eb', marginBottom: 2 }
-const fieldRow: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4 }
 const fieldLabel: CSSProperties = { fontSize: 13, fontWeight: 500 }
 const fieldHint: CSSProperties = { fontSize: 11, opacity: 0.55 }
 const input: CSSProperties = {
@@ -34,17 +22,7 @@ const input: CSSProperties = {
   fontSize: 14, background: '#fff', width: '100%',
 }
 const inlineRow: CSSProperties = { display: 'flex', gap: 14 }
-const inlineCol: CSSProperties = { ...fieldRow, flex: 1 }
-const footer: CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }
-const saveBtn: CSSProperties = {
-  padding: '8px 18px', borderRadius: 6, border: 'none', background: '#2563eb', color: '#fff',
-  fontSize: 14, fontWeight: 500, cursor: 'pointer',
-}
-const statusText: CSSProperties = { fontSize: 13 }
-const linkBtn: CSSProperties = {
-  padding: '4px 8px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.15)',
-  background: 'transparent', color: '#2563eb', fontSize: 12, cursor: 'pointer', alignSelf: 'flex-start',
-}
+const inlineCol: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }
 
 /** A section header: the SMTP fields or the summary preference. */
 function FieldGroup({ label, children }: { label: string; children: ReactNode }) {
@@ -131,33 +109,50 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
       const def = (defaultPrompts[style] ?? '').trim()
       const promptText = (settings.prompt ?? '').trim()
       const customPrompt = promptText === '' || promptText === def ? '' : settings.prompt
-      const patch = { ...settings, prompt: customPrompt }
-      const saved = await api.saveSettings({ patch })
+      const patchValue = { ...settings, prompt: customPrompt }
+      const saved = await api.saveSettings({ patch: patchValue })
       if (password !== '') await api.setPassword({ password })
       setSaving(false)
       setMessage(saved.ok ? t('settings.saved') : (saved.error ?? t('settings.error')))
     })()
   }, [settings, saving, password, defaultPrompts, api, t])
 
+  const discard = useCallback(() => {
+    if (saving) return
+    setMessage(null)
+    void api.getSettings().then((result) => {
+      const style = result.settings.style === 'brief' ? 'brief' : 'detailed'
+      setSettings({
+        ...result.settings,
+        prompt: (result.settings.prompt ?? '').trim() !== ''
+          ? result.settings.prompt
+          : result.defaultPrompts[style],
+      })
+      setPresets(result.presets)
+      setDefaultPrompts(result.defaultPrompts)
+      setPassword('')
+    })
+  }, [saving, api])
+
   if (settings === null) return null
 
   return (
-    <li style={card}>
+    <li className={open ? `${css.card} ${css.cardOpen}` : css.card}>
       <button
         type="button"
-        style={headerBtn}
+        className={css.header}
         aria-expanded={open}
         onClick={() => { setOpen(!open) }}
       >
-        <span style={headerText}>
-          <span style={title}>{t('nav')}</span>
-          <span style={desc}>{t('desc')}</span>
+        <span className={css.headText}>
+          <span className={css.name}>{t('nav')}</span>
+          <span className={css.description}>{t('desc')}</span>
         </span>
-        <span style={chevron}>{open ? '▾' : '▸'}</span>
+        <IconChevronDownOutline14 className={open ? `${css.chevron} ${css.chevronOpen}` : css.chevron} />
       </button>
 
       {open && (
-        <div style={body}>
+        <div className={css.body}>
           <FieldGroup label={t('settings.provider')}>
             <select style={input} value={settings.provider} onChange={event => onProvider(event.target.value)}>
               {presets.map(preset => <option key={preset.id} value={preset.id}>{preset.label}</option>)}
@@ -247,16 +242,19 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
               onChange={event => patch({ prompt: event.target.value })}
             />
             <div style={fieldHint}>{t('settings.promptHint')}</div>
-            <button type="button" style={linkBtn} onClick={restoreDefaultPrompt}>
+            <button type="button" style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.15)', background: 'transparent', color: '#2563eb', fontSize: 12, cursor: 'pointer', alignSelf: 'flex-start' }} onClick={restoreDefaultPrompt}>
               {t('settings.restoreDefaultPrompt')}
             </button>
           </FieldGroup>
 
-          <div style={footer}>
-            <button type="button" style={saveBtn} onClick={onSave} disabled={saving}>
+          <div className={css.footer}>
+            {message !== null && <span className={css.failed} role="status">{message}</span>}
+            <button type="button" className={css.discard} onClick={discard} disabled={saving}>
+              {t('settings.discard')}
+            </button>
+            <button type="button" className={css.save} onClick={onSave} disabled={saving}>
               {saving ? t('settings.saving') : t('settings.save')}
             </button>
-            {message !== null && <span style={statusText} role="status">{message}</span>}
           </div>
         </div>
       )}

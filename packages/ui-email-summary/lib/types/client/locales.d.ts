@@ -34,6 +34,7 @@ export declare const zh: {
     'settings.detailed': string;
     'settings.brief': string;
     'settings.save': string;
+    'settings.discard': string;
     'settings.saving': string;
     'settings.saved': string;
     'settings.error': string;
@@ -81,6 +82,7 @@ export declare const en: {
     'settings.detailed': string;
     'settings.brief': string;
     'settings.save': string;
+    'settings.discard': string;
     'settings.saving': string;
     'settings.saved': string;
     'settings.error': string;

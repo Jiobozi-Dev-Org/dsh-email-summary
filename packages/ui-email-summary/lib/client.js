@@ -8,13 +8,13 @@ window.__ModuleLoader__.load({
 		let react = require("react");
 		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
 		//#region \0dsh-css:D:\public\deepseek-harness\packages\client\ui-email-summary\src\client\EmailSendAction.module.css.mjs
-		const css = ".UYZKjW_actionPill{height:28px;color:var(--dsw-alias-label-tertiary);cursor:pointer;background:0 0;border:none;border-radius:14px;justify-content:center;align-items:center;gap:4px;padding:0 10px;font-size:13px;display:inline-flex}.UYZKjW_actionPill:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}.UYZKjW_actionPill:disabled{cursor:default;opacity:.4}.UYZKjW_failure{text-overflow:ellipsis;white-space:nowrap;max-width:220px;color:var(--dsw-alias-label-tertiary);padding-left:4px;font-size:13px;line-height:20px;overflow:hidden}";
-		const tagId = "@deepseek-ai/dsh-client-ui-email-summary/EmailSendAction.module.css";
-		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
+		const css$1 = ".UYZKjW_actionPill{height:28px;color:var(--dsw-alias-label-tertiary);cursor:pointer;background:0 0;border:none;border-radius:14px;justify-content:center;align-items:center;gap:4px;padding:0 10px;font-size:13px;display:inline-flex}.UYZKjW_actionPill:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}.UYZKjW_actionPill:disabled{cursor:default;opacity:.4}.UYZKjW_failure{text-overflow:ellipsis;white-space:nowrap;max-width:220px;color:var(--dsw-alias-label-tertiary);padding-left:4px;font-size:13px;line-height:20px;overflow:hidden}";
+		const tagId$1 = "@deepseek-ai/dsh-client-ui-email-summary/EmailSendAction.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
 			tag.dataset.plugin = "@deepseek-ai/dsh-client-ui-email-summary";
-			tag.dataset.pluginCss = tagId;
-			tag.textContent = css;
+			tag.dataset.pluginCss = tagId$1;
+			tag.textContent = css$1;
 			document.head.appendChild(tag);
 		}
 		var EmailSendAction_module_css_default = {
@@ -118,67 +118,44 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
+		//#region \0dsh-css:D:\public\deepseek-harness\packages\client\ui-email-summary\src\client\EmailCard.module.css.mjs
+		const css = ".NRWTCa_card{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);border-radius:12px;margin:0;padding:0;list-style:none;transition:border-color .16s,background .16s}.NRWTCa_card:hover{border-color:var(--dsw-alias-label-dimmed)}.NRWTCa_cardOpen{background:var(--dsw-alias-bg-layer-2);border-color:var(--dsw-alias-label-dimmed)}.NRWTCa_header{appearance:none;width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer;background:0 0;border:0;border-radius:12px;align-items:center;gap:12px;padding:14px 16px;display:flex}.NRWTCa_header:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}.NRWTCa_headText{flex-direction:column;flex:1;gap:4px;min-width:0;display:flex}.NRWTCa_name{color:var(--dsw-alias-label-primary);font-size:15px;font-weight:600;line-height:1.4}.NRWTCa_description{color:var(--dsw-alias-label-tertiary);font-size:13px;line-height:1.5}.NRWTCa_chevron{color:var(--dsw-alias-label-tertiary);flex:none;transition:transform .16s}.NRWTCa_chevronOpen{transform:rotate(180deg)}.NRWTCa_body{border-top:1px solid var(--dsw-alias-border-l2);flex-direction:column;gap:14px;max-width:560px;margin:0 16px;padding:16px 0 8px;display:flex}.NRWTCa_footer{border-top:1px solid var(--dsw-alias-border-l2);justify-content:flex-end;align-items:center;gap:8px;padding:12px 0 4px;display:flex}.NRWTCa_failed{min-width:0;color:var(--dsw-alias-label-error);flex:1;margin:0;font-size:12px;line-height:1.5}.NRWTCa_discard,.NRWTCa_save{appearance:none;font:inherit;cursor:pointer;border:1px solid #0000;border-radius:8px;padding:5px 14px;font-size:13px;line-height:1.5}.NRWTCa_discard{border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);background:0 0}.NRWTCa_discard:hover:not(:disabled){color:var(--dsw-alias-label-primary);border-color:var(--dsw-alias-label-dimmed)}.NRWTCa_save{background:var(--dsw-alias-label-primary);color:var(--dsw-alias-bg-layer-3)}.NRWTCa_discard:disabled,.NRWTCa_save:disabled{opacity:.4;cursor:default}";
+		const tagId = "@deepseek-ai/dsh-client-ui-email-summary/EmailCard.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
+			const tag = document.createElement("style");
+			tag.dataset.plugin = "@deepseek-ai/dsh-client-ui-email-summary";
+			tag.dataset.pluginCss = tagId;
+			tag.textContent = css;
+			document.head.appendChild(tag);
+		}
+		var EmailCard_module_css_default = {
+			"body": "NRWTCa_body",
+			"card": "NRWTCa_card",
+			"cardOpen": "NRWTCa_cardOpen",
+			"chevron": "NRWTCa_chevron",
+			"chevronOpen": "NRWTCa_chevronOpen",
+			"description": "NRWTCa_description",
+			"discard": "NRWTCa_discard",
+			"failed": "NRWTCa_failed",
+			"footer": "NRWTCa_footer",
+			"headText": "NRWTCa_headText",
+			"header": "NRWTCa_header",
+			"name": "NRWTCa_name",
+			"save": "NRWTCa_save"
+		};
+		//#endregion
 		//#region lib/types/client/EmailSettingsSection.js
 		/**
 		* Email-summary plugin configuration card (shown in Settings → Plugins).
-		* Collapsed by default, like the built-in plugin cards; expanding reveals the
-		* SMTP + summary form, whose fields are persisted through the Host Remote.
+		* Collapsed by default, mirroring the shared PluginCard chrome so it sits
+		* beside the built-in shell / agent-loop / web-search cards identically.
 		* @module @deepseek-ai/dsh-client-ui-email-summary/client/EmailSettingsSection
 		*/
-		const card = {
-			margin: 0,
-			padding: 0,
-			listStyle: "none"
-		};
-		const headerBtn = {
-			display: "flex",
-			alignItems: "center",
-			justifyContent: "space-between",
-			gap: 12,
-			width: "100%",
-			padding: "14px 16px",
-			border: "none",
-			background: "transparent",
-			cursor: "pointer",
-			textAlign: "left",
-			color: "inherit"
-		};
-		const headerText = {
-			display: "flex",
-			flexDirection: "column",
-			alignItems: "flex-start",
-			gap: 2
-		};
-		const title = {
-			fontWeight: 600,
-			fontSize: 15
-		};
-		const desc = {
-			fontSize: 12,
-			opacity: .65
-		};
-		const chevron = {
-			fontSize: 12,
-			opacity: .6,
-			flexShrink: 0
-		};
-		const body = {
-			padding: "4px 16px 16px",
-			display: "flex",
-			flexDirection: "column",
-			gap: 14,
-			maxWidth: 560
-		};
 		const groupLabel = {
 			fontSize: 12,
 			fontWeight: 600,
 			color: "#2563eb",
 			marginBottom: 2
-		};
-		const fieldRow = {
-			display: "flex",
-			flexDirection: "column",
-			gap: 4
 		};
 		const fieldLabel = {
 			fontSize: 13,
@@ -201,35 +178,10 @@ window.__ModuleLoader__.load({
 			gap: 14
 		};
 		const inlineCol = {
-			...fieldRow,
-			flex: 1
-		};
-		const footer = {
 			display: "flex",
-			alignItems: "center",
-			gap: 12,
-			marginTop: 4
-		};
-		const saveBtn = {
-			padding: "8px 18px",
-			borderRadius: 6,
-			border: "none",
-			background: "#2563eb",
-			color: "#fff",
-			fontSize: 14,
-			fontWeight: 500,
-			cursor: "pointer"
-		};
-		const statusText = { fontSize: 13 };
-		const linkBtn = {
-			padding: "4px 8px",
-			borderRadius: 6,
-			border: "1px solid rgba(0,0,0,0.15)",
-			background: "transparent",
-			color: "#2563eb",
-			fontSize: 12,
-			cursor: "pointer",
-			alignSelf: "flex-start"
+			flexDirection: "column",
+			gap: 4,
+			flex: 1
 		};
 		/** A section header: the SMTP fields or the summary preference. */
 		function FieldGroup({ label, children }) {
@@ -321,11 +273,11 @@ window.__ModuleLoader__.load({
 					const def = (defaultPrompts[settings.style === "brief" ? "brief" : "detailed"] ?? "").trim();
 					const promptText = (settings.prompt ?? "").trim();
 					const customPrompt = promptText === "" || promptText === def ? "" : settings.prompt;
-					const patch = {
+					const patchValue = {
 						...settings,
 						prompt: customPrompt
 					};
-					const saved = await api.saveSettings({ patch });
+					const saved = await api.saveSettings({ patch: patchValue });
 					if (password !== "") await api.setPassword({ password });
 					setSaving(false);
 					setMessage(saved.ok ? t("settings.saved") : saved.error ?? t("settings.error"));
@@ -338,31 +290,42 @@ window.__ModuleLoader__.load({
 				api,
 				t
 			]);
+			const discard = (0, react.useCallback)(() => {
+				if (saving) return;
+				setMessage(null);
+				api.getSettings().then((result) => {
+					const style = result.settings.style === "brief" ? "brief" : "detailed";
+					setSettings({
+						...result.settings,
+						prompt: (result.settings.prompt ?? "").trim() !== "" ? result.settings.prompt : result.defaultPrompts[style]
+					});
+					setPresets(result.presets);
+					setDefaultPrompts(result.defaultPrompts);
+					setPassword("");
+				});
+			}, [saving, api]);
 			if (settings === null) return null;
 			return (0, react_jsx_runtime.jsxs)("li", {
-				style: card,
+				className: open ? `${EmailCard_module_css_default.card} ${EmailCard_module_css_default.cardOpen}` : EmailCard_module_css_default.card,
 				children: [(0, react_jsx_runtime.jsxs)("button", {
 					type: "button",
-					style: headerBtn,
+					className: EmailCard_module_css_default.header,
 					"aria-expanded": open,
 					onClick: () => {
 						setOpen(!open);
 					},
 					children: [(0, react_jsx_runtime.jsxs)("span", {
-						style: headerText,
+						className: EmailCard_module_css_default.headText,
 						children: [(0, react_jsx_runtime.jsx)("span", {
-							style: title,
+							className: EmailCard_module_css_default.name,
 							children: t("nav")
 						}), (0, react_jsx_runtime.jsx)("span", {
-							style: desc,
+							className: EmailCard_module_css_default.description,
 							children: t("desc")
 						})]
-					}), (0, react_jsx_runtime.jsx)("span", {
-						style: chevron,
-						children: open ? "▾" : "▸"
-					})]
+					}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, { className: open ? `${EmailCard_module_css_default.chevron} ${EmailCard_module_css_default.chevronOpen}` : EmailCard_module_css_default.chevron })]
 				}), open && (0, react_jsx_runtime.jsxs)("div", {
-					style: body,
+					className: EmailCard_module_css_default.body,
 					children: [
 						(0, react_jsx_runtime.jsx)(FieldGroup, {
 							label: t("settings.provider"),
@@ -539,25 +502,44 @@ window.__ModuleLoader__.load({
 								}),
 								(0, react_jsx_runtime.jsx)("button", {
 									type: "button",
-									style: linkBtn,
+									style: {
+										padding: "4px 8px",
+										borderRadius: 6,
+										border: "1px solid rgba(0,0,0,0.15)",
+										background: "transparent",
+										color: "#2563eb",
+										fontSize: 12,
+										cursor: "pointer",
+										alignSelf: "flex-start"
+									},
 									onClick: restoreDefaultPrompt,
 									children: t("settings.restoreDefaultPrompt")
 								})
 							]
 						}),
 						(0, react_jsx_runtime.jsxs)("div", {
-							style: footer,
-							children: [(0, react_jsx_runtime.jsx)("button", {
-								type: "button",
-								style: saveBtn,
-								onClick: onSave,
-								disabled: saving,
-								children: saving ? t("settings.saving") : t("settings.save")
-							}), message !== null && (0, react_jsx_runtime.jsx)("span", {
-								style: statusText,
-								role: "status",
-								children: message
-							})]
+							className: EmailCard_module_css_default.footer,
+							children: [
+								message !== null && (0, react_jsx_runtime.jsx)("span", {
+									className: EmailCard_module_css_default.failed,
+									role: "status",
+									children: message
+								}),
+								(0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									className: EmailCard_module_css_default.discard,
+									onClick: discard,
+									disabled: saving,
+									children: t("settings.discard")
+								}),
+								(0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									className: EmailCard_module_css_default.save,
+									onClick: onSave,
+									disabled: saving,
+									children: saving ? t("settings.saving") : t("settings.save")
+								})
+							]
 						})
 					]
 				})]
@@ -601,6 +583,7 @@ window.__ModuleLoader__.load({
 			"settings.detailed": "详细",
 			"settings.brief": "简短",
 			"settings.save": "保存",
+			"settings.discard": "放弃",
 			"settings.saving": "保存中…",
 			"settings.saved": "已保存",
 			"settings.error": "保存失败"
@@ -640,6 +623,7 @@ window.__ModuleLoader__.load({
 			"settings.detailed": "Detailed",
 			"settings.brief": "Brief",
 			"settings.save": "Save",
+			"settings.discard": "Discard",
 			"settings.saving": "Saving…",
 			"settings.saved": "Saved",
 			"settings.error": "Save failed"
