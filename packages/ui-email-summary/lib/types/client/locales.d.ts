@@ -2,6 +2,7 @@
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export declare const zh: {
     nav: string;
+    desc: string;
     'send.label': string;
     'send.title': string;
     'send.pending': string;
@@ -37,6 +38,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 /** English dictionary, checked complete against the zh key set. */
 export declare const en: {
     nav: string;
+    desc: string;
     'send.label': string;
     'send.title': string;
     'send.pending': string;

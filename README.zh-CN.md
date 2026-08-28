@@ -52,7 +52,7 @@ dsh plugin add @jiobozi-dev-org/dsh-client-ui-email-summary
 
 ## ⚙️ 配置
 
-1. 打开 **设置 → 邮件通知**，选择邮箱预设（Gmail / QQ / 163 / 126 / Outlook / 自定义）。
+1. 打开 **设置 → Plugins → 可配置**，找到「邮件通知」卡片，选择邮箱预设（Gmail / QQ / 163 / 126 / Outlook / 自定义）。
 2. 填写：登录账号、发件人邮箱、默认收件人、总结详略。
 3. 密码/授权码填在「密码」栏，保存后会写入凭证（`EMAIL_SMTP_PASSWORD`）。
 

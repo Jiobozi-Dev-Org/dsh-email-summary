@@ -3,8 +3,9 @@
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
   'nav': '邮件通知',
+  'desc': '把对话总结成 HTML 邮件并发送到指定邮箱',
   'send.label': '发送邮件',
-  'send.title': '把当前对话总结成 Markdown 并通过邮件发送',
+  'send.title': '把当前对话总结成 HTML 邮件并发送',
   'send.pending': '发送中…',
   'send.done': '已发送',
   'send.failed': '发送失败',
@@ -41,8 +42,9 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 /** English dictionary, checked complete against the zh key set. */
 export const en = {
   'nav': 'Email',
+  'desc': 'Summarize conversations into HTML emails and send them over SMTP',
   'send.label': 'Send email',
-  'send.title': 'Summarize this conversation as Markdown and email it',
+  'send.title': 'Summarize this conversation as an HTML email and send it',
   'send.pending': 'Sending…',
   'send.done': 'Sent',
   'send.failed': 'Send failed',

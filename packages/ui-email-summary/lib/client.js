@@ -173,150 +173,177 @@ window.__ModuleLoader__.load({
 				t
 			]);
 			if (settings === null) return null;
-			return (0, react_jsx_runtime.jsxs)("div", {
+			return (0, react_jsx_runtime.jsxs)("li", {
 				style: {
-					display: "flex",
-					flexDirection: "column",
-					gap: 14,
-					maxWidth: 560
+					margin: 0,
+					padding: 0,
+					listStyle: "none"
 				},
-				children: [
-					(0, react_jsx_runtime.jsxs)("label", {
-						style: row,
-						children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.provider") }), (0, react_jsx_runtime.jsx)("select", {
-							style: field,
-							value: settings.provider,
-							onChange: (event) => onProvider(event.target.value),
-							children: presets.map((preset) => (0, react_jsx_runtime.jsx)("option", {
-								value: preset.id,
-								children: preset.label
-							}, preset.id))
-						})]
-					}),
-					(0, react_jsx_runtime.jsxs)("label", {
-						style: row,
-						children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.host") }), (0, react_jsx_runtime.jsx)("input", {
-							style: field,
-							value: settings.smtpHost,
-							onChange: (event) => patch({ smtpHost: event.target.value })
-						})]
-					}),
-					(0, react_jsx_runtime.jsxs)("div", {
+				children: [(0, react_jsx_runtime.jsxs)("div", {
+					style: {
+						padding: "14px 16px",
+						borderBottom: "1px solid rgba(0,0,0,0.08)"
+					},
+					children: [(0, react_jsx_runtime.jsx)("div", {
 						style: {
-							display: "flex",
-							gap: 14
+							fontWeight: 600,
+							fontSize: 15
 						},
-						children: [(0, react_jsx_runtime.jsxs)("label", {
-							style: {
-								...row,
-								flex: 1
-							},
-							children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.port") }), (0, react_jsx_runtime.jsx)("input", {
-								style: field,
-								type: "number",
-								value: settings.smtpPort,
-								onChange: (event) => patch({ smtpPort: Number(event.target.value) })
-							})]
-						}), (0, react_jsx_runtime.jsxs)("label", {
-							style: {
-								...row,
-								flex: 1
-							},
-							children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.secure") }), (0, react_jsx_runtime.jsxs)("select", {
-								style: field,
-								value: settings.secure,
-								onChange: (event) => patch({ secure: event.target.value }),
-								children: [
-									(0, react_jsx_runtime.jsx)("option", {
-										value: "starttls",
-										children: "STARTTLS"
-									}),
-									(0, react_jsx_runtime.jsx)("option", {
-										value: "ssl",
-										children: "SSL"
-									}),
-									(0, react_jsx_runtime.jsx)("option", {
-										value: "none",
-										children: "None"
-									})
-								]
-							})]
-						})]
-					}),
-					(0, react_jsx_runtime.jsxs)("label", {
-						style: row,
-						children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.username") }), (0, react_jsx_runtime.jsx)("input", {
-							style: field,
-							value: settings.username,
-							onChange: (event) => patch({ username: event.target.value })
-						})]
-					}),
-					(0, react_jsx_runtime.jsxs)("label", {
-						style: row,
-						children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.password") }), (0, react_jsx_runtime.jsx)("input", {
-							style: field,
-							type: "password",
-							value: password,
-							placeholder: t("settings.passwordHint"),
-							onChange: (event) => setPassword(event.target.value)
-						})]
-					}),
-					(0, react_jsx_runtime.jsxs)("label", {
-						style: row,
-						children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.from") }), (0, react_jsx_runtime.jsx)("input", {
-							style: field,
-							value: settings.from,
-							onChange: (event) => patch({ from: event.target.value })
-						})]
-					}),
-					(0, react_jsx_runtime.jsxs)("label", {
-						style: row,
-						children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.recipient") }), (0, react_jsx_runtime.jsx)("input", {
-							style: field,
-							value: settings.defaultRecipient,
-							onChange: (event) => patch({ defaultRecipient: event.target.value })
-						})]
-					}),
-					(0, react_jsx_runtime.jsxs)("label", {
-						style: row,
-						children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.style") }), (0, react_jsx_runtime.jsxs)("select", {
-							style: field,
-							value: settings.style,
-							onChange: (event) => patch({ style: event.target.value }),
-							children: [(0, react_jsx_runtime.jsx)("option", {
-								value: "detailed",
-								children: t("settings.detailed")
-							}), (0, react_jsx_runtime.jsx)("option", {
-								value: "brief",
-								children: t("settings.brief")
-							})]
-						})]
-					}),
-					(0, react_jsx_runtime.jsxs)("div", {
-						style: {
-							display: "flex",
-							alignItems: "center",
-							gap: 12
-						},
-						children: [(0, react_jsx_runtime.jsx)("button", {
-							type: "button",
-							onClick: onSave,
-							disabled: saving,
-							children: saving ? t("settings.saving") : t("settings.save")
-						}), message !== null && (0, react_jsx_runtime.jsx)("span", {
-							role: "status",
-							children: message
-						})]
-					}),
-					(0, react_jsx_runtime.jsx)("p", {
+						children: t("nav")
+					}), (0, react_jsx_runtime.jsx)("div", {
 						style: {
 							fontSize: 12,
-							opacity: .7,
-							margin: 0
+							opacity: .65,
+							marginTop: 2
 						},
-						children: t("settings.passwordHint")
-					})
-				]
+						children: t("desc")
+					})]
+				}), (0, react_jsx_runtime.jsxs)("div", {
+					style: {
+						padding: 16,
+						display: "flex",
+						flexDirection: "column",
+						gap: 14,
+						maxWidth: 560
+					},
+					children: [
+						(0, react_jsx_runtime.jsxs)("label", {
+							style: row,
+							children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.provider") }), (0, react_jsx_runtime.jsx)("select", {
+								style: field,
+								value: settings.provider,
+								onChange: (event) => onProvider(event.target.value),
+								children: presets.map((preset) => (0, react_jsx_runtime.jsx)("option", {
+									value: preset.id,
+									children: preset.label
+								}, preset.id))
+							})]
+						}),
+						(0, react_jsx_runtime.jsxs)("label", {
+							style: row,
+							children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.host") }), (0, react_jsx_runtime.jsx)("input", {
+								style: field,
+								value: settings.smtpHost,
+								onChange: (event) => patch({ smtpHost: event.target.value })
+							})]
+						}),
+						(0, react_jsx_runtime.jsxs)("div", {
+							style: {
+								display: "flex",
+								gap: 14
+							},
+							children: [(0, react_jsx_runtime.jsxs)("label", {
+								style: {
+									...row,
+									flex: 1
+								},
+								children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.port") }), (0, react_jsx_runtime.jsx)("input", {
+									style: field,
+									type: "number",
+									value: settings.smtpPort,
+									onChange: (event) => patch({ smtpPort: Number(event.target.value) })
+								})]
+							}), (0, react_jsx_runtime.jsxs)("label", {
+								style: {
+									...row,
+									flex: 1
+								},
+								children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.secure") }), (0, react_jsx_runtime.jsxs)("select", {
+									style: field,
+									value: settings.secure,
+									onChange: (event) => patch({ secure: event.target.value }),
+									children: [
+										(0, react_jsx_runtime.jsx)("option", {
+											value: "starttls",
+											children: "STARTTLS"
+										}),
+										(0, react_jsx_runtime.jsx)("option", {
+											value: "ssl",
+											children: "SSL"
+										}),
+										(0, react_jsx_runtime.jsx)("option", {
+											value: "none",
+											children: "None"
+										})
+									]
+								})]
+							})]
+						}),
+						(0, react_jsx_runtime.jsxs)("label", {
+							style: row,
+							children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.username") }), (0, react_jsx_runtime.jsx)("input", {
+								style: field,
+								value: settings.username,
+								onChange: (event) => patch({ username: event.target.value })
+							})]
+						}),
+						(0, react_jsx_runtime.jsxs)("label", {
+							style: row,
+							children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.password") }), (0, react_jsx_runtime.jsx)("input", {
+								style: field,
+								type: "password",
+								value: password,
+								placeholder: t("settings.passwordHint"),
+								onChange: (event) => setPassword(event.target.value)
+							})]
+						}),
+						(0, react_jsx_runtime.jsxs)("label", {
+							style: row,
+							children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.from") }), (0, react_jsx_runtime.jsx)("input", {
+								style: field,
+								value: settings.from,
+								onChange: (event) => patch({ from: event.target.value })
+							})]
+						}),
+						(0, react_jsx_runtime.jsxs)("label", {
+							style: row,
+							children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.recipient") }), (0, react_jsx_runtime.jsx)("input", {
+								style: field,
+								value: settings.defaultRecipient,
+								onChange: (event) => patch({ defaultRecipient: event.target.value })
+							})]
+						}),
+						(0, react_jsx_runtime.jsxs)("label", {
+							style: row,
+							children: [(0, react_jsx_runtime.jsx)("span", { children: t("settings.style") }), (0, react_jsx_runtime.jsxs)("select", {
+								style: field,
+								value: settings.style,
+								onChange: (event) => patch({ style: event.target.value }),
+								children: [(0, react_jsx_runtime.jsx)("option", {
+									value: "detailed",
+									children: t("settings.detailed")
+								}), (0, react_jsx_runtime.jsx)("option", {
+									value: "brief",
+									children: t("settings.brief")
+								})]
+							})]
+						}),
+						(0, react_jsx_runtime.jsxs)("div", {
+							style: {
+								display: "flex",
+								alignItems: "center",
+								gap: 12
+							},
+							children: [(0, react_jsx_runtime.jsx)("button", {
+								type: "button",
+								onClick: onSave,
+								disabled: saving,
+								children: saving ? t("settings.saving") : t("settings.save")
+							}), message !== null && (0, react_jsx_runtime.jsx)("span", {
+								role: "status",
+								children: message
+							})]
+						}),
+						(0, react_jsx_runtime.jsx)("p", {
+							style: {
+								fontSize: 12,
+								opacity: .7,
+								margin: 0
+							},
+							children: t("settings.passwordHint")
+						})
+					]
+				})]
 			});
 		}
 		//#endregion
@@ -325,8 +352,9 @@ window.__ModuleLoader__.load({
 		/** Simplified Chinese dictionary (the key-set source of truth). */
 		const zh = {
 			"nav": "邮件通知",
+			"desc": "把对话总结成 HTML 邮件并发送到指定邮箱",
 			"send.label": "发送邮件",
-			"send.title": "把当前对话总结成 Markdown 并通过邮件发送",
+			"send.title": "把当前对话总结成 HTML 邮件并发送",
 			"send.pending": "发送中…",
 			"send.done": "已发送",
 			"send.failed": "发送失败",
@@ -352,8 +380,9 @@ window.__ModuleLoader__.load({
 		/** English dictionary, checked complete against the zh key set. */
 		const en = {
 			"nav": "Email",
+			"desc": "Summarize conversations into HTML emails and send them over SMTP",
 			"send.label": "Send email",
-			"send.title": "Summarize this conversation as Markdown and email it",
+			"send.title": "Summarize this conversation as an HTML email and send it",
 			"send.pending": "Sending…",
 			"send.done": "Sent",
 			"send.failed": "Send failed",
@@ -444,12 +473,11 @@ window.__ModuleLoader__.load({
 					error: errorText(result.error)
 				})
 			};
-			ctx.slots.inject("settings.section", () => {
+			ctx.slots.inject("settings.plugin.item", () => {
 				const dispose = ctx.slots.register({
-					name: "settings.section",
-					id: "email-summary",
-					order: 60,
-					label: () => t("nav"),
+					name: "settings.plugin.item",
+					key: "email-summary",
+					locale: NS,
 					inject: () => ({
 						api,
 						t

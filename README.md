@@ -52,7 +52,7 @@ Add the Host row to the host composition and the Client row to the client compos
 
 ## ⚙️ Configuration
 
-1. Open **Settings → Email** (邮件通知), pick a provider preset (Gmail / QQ / 163 / 126 / Outlook / Custom).
+1. Open **Settings → Plugins → Configurable**, find the **Email** card, and pick a provider preset (Gmail / QQ / 163 / 126 / Outlook / Custom).
 2. Fill in: login username, sender address, default recipient, summary detail level.
 3. Enter the password / authorization code in the password field; saving stores it as a credential (`EMAIL_SMTP_PASSWORD`).
 

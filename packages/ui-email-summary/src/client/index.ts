@@ -10,8 +10,8 @@ import type { ClientContext, SessionId } from '@deepseek-ai/dsh-client-runtime/c
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 // Type-only: pulls the ui-conversation SlotMap merge (assistant-actions, input.right).
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
-// Type-only: pulls the settings shell's SlotMap merge (settings.section).
-import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+// Type-only: pulls the plugin-configuration SlotMap merge (settings.plugin.item).
+import type {} from '@deepseek-ai/dsh-client-ui-settings-plugins/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import { EmailSendAction } from './EmailSendAction.tsx'
@@ -77,12 +77,11 @@ export function apply(ctx: ClientContext): void {
       result.ok ? result.value : { ok: false, error: errorText(result.error) }),
   }
 
-  ctx.slots.inject('settings.section', () => {
+  ctx.slots.inject('settings.plugin.item', () => {
     const dispose = ctx.slots.register({
-      name: 'settings.section',
-      id: 'email-summary',
-      order: 60,
-      label: () => t('nav'),
+      name: 'settings.plugin.item',
+      key: 'email-summary',
+      locale: NS,
       inject: (): EmailSettingsInjected => ({ api, t }),
     }, EmailSettingsSection)
     return () => dispose()

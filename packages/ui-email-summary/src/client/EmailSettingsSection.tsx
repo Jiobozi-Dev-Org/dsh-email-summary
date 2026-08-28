@@ -64,7 +64,12 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
   if (settings === null) return null
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 560 }}>
+    <li style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+      <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
+        <div style={{ fontWeight: 600, fontSize: 15 }}>{t('nav')}</div>
+        <div style={{ fontSize: 12, opacity: 0.65, marginTop: 2 }}>{t('desc')}</div>
+      </div>
+      <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 560 }}>
       <label style={row}>
         <span>{t('settings.provider')}</span>
         <select
@@ -155,6 +160,7 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
       </div>
 
       <p style={{ fontSize: 12, opacity: 0.7, margin: 0 }}>{t('settings.passwordHint')}</p>
-    </div>
+      </div>
+    </li>
   )
 }

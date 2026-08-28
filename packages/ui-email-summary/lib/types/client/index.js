@@ -52,12 +52,11 @@ export function apply(ctx) {
         saveSettings: request => remote.saveSettings(request).then(result => result.ok ? result.value : { ok: false, error: errorText(result.error) }),
         setPassword: request => remote.setPassword(request).then(result => result.ok ? result.value : { ok: false, error: errorText(result.error) }),
     };
-    ctx.slots.inject('settings.section', () => {
+    ctx.slots.inject('settings.plugin.item', () => {
         const dispose = ctx.slots.register({
-            name: 'settings.section',
-            id: 'email-summary',
-            order: 60,
-            label: () => t('nav'),
+            name: 'settings.plugin.item',
+            key: 'email-summary',
+            locale: NS,
             inject: () => ({ api, t }),
         }, EmailSettingsSection);
         return () => dispose();
