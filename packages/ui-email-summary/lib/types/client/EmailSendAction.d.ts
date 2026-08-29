@@ -2,7 +2,7 @@
  * One assistant-message "send email" action in the message IconActions row.
  * Rendered as a pill button with an icon + label, using the shared theme
  * tokens so it sits consistently beside the copy / like / dislike icons.
- * @module @deepseek-ai/dsh-client-ui-email-summary/client/EmailSendAction
+ * @module @jiobozi-dev-org/dsh-client-ui-email-summary/client/EmailSendAction
  */
 import type { InjectFace, PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
 import type { EmailSendInjected } from './types.ts';

@@ -10,7 +10,7 @@ import { deriveEventMessage } from "@deepseek-ai/dsh-session/surface";
 //#region lib/types/spec.js
 /**
 * Durable settings namespace, schema, and provider presets for email-summary.
-* @module @deepseek-ai/dsh-email-summary/src/spec
+* @module @jiobozi-dev-org/dsh-email-summary/src/spec
 */
 /** Durable settings namespace for SMTP + summary preferences. */
 const EMAIL_SUMMARY_SETTINGS_NAMESPACE = "email-summary";
@@ -106,10 +106,12 @@ function presetById(id) {
 * connections honor an HTTP/SOCKS5 proxy from `HTTPS_PROXY`/`HTTP_PROXY`/
 * `ALL_PROXY` environment variables, falling back to the Windows system
 * proxy, so a local Clash/V2Ray tunnel can reach blocked SMTP hosts.
-* @module @deepseek-ai/dsh-email-summary/src/smtp
+* @module @jiobozi-dev-org/dsh-email-summary/src/smtp
 */
 /** Connect-phase inactivity timeout (cleared once the SMTP greeting arrives). */
 const CONNECT_TIMEOUT_MS = 2e4;
+/** Per-command inactivity timeout: a server stall after the greeting still fails instead of hanging. */
+const SMTP_IO_TIMEOUT_MS = 3e4;
 /** One SMTP session: a command/response request-response layer over a socket. */
 var SmtpSession = class {
 	conn;
@@ -367,17 +369,22 @@ function encodeHeader(value) {
 	if (/^[\x20-\x7e]*$/.test(value)) return value;
 	return `=?utf-8?B?${b64(value)}?=`;
 }
+/** Strip CR/LF from an address so a crafted setting cannot inject SMTP headers. */
+function sanitizeAddr(value) {
+	return value.replace(/[\r\n]/g, "");
+}
 /** Build the raw message (headers + base64 body) handed to the DATA command. */
 function buildMessage(mail) {
-	return [
-		`From: <${mail.from}>`,
-		`To: <${mail.to}>`,
+	return `${[
+		`From: <${sanitizeAddr(mail.from)}>`,
+		`To: <${sanitizeAddr(mail.to)}>`,
+		`Date: ${(/* @__PURE__ */ new Date()).toUTCString()}`,
+		`Message-ID: <${Date.now()}.${Math.random().toString(36).slice(2)}@dsh-email-summary>`,
 		`Subject: ${encodeHeader(mail.subject)}`,
 		"MIME-Version: 1.0",
 		"Content-Type: text/html; charset=utf-8",
-		"Content-Transfer-Encoding: base64",
-		""
-	].join("\r\n") + b64(mail.html).replace(/(.{76})/g, "$1\r\n").replace(/\r\n$/, "") + "\r\n";
+		"Content-Transfer-Encoding: base64"
+	].join("\r\n")}\r\n\r\n${b64(mail.html).replace(/(.{76})/g, "$1\r\n").replace(/\r\n$/, "")}\r\n`;
 }
 /** Send one email over SMTP. */
 async function sendSmtpMail(mail) {
@@ -390,9 +397,12 @@ async function sendSmtpMail(mail) {
 		servername: mail.host
 	})) : new SmtpSession(raw);
 	try {
+		const greeting = session.awaitReply(220);
 		if (leftover !== "") session.feed(leftover);
-		await session.awaitReply(220);
-		raw.setTimeout(0);
+		await greeting;
+		raw.setTimeout(SMTP_IO_TIMEOUT_MS, () => {
+			raw.destroy(/* @__PURE__ */ new Error(`SMTP 会话超时（${SMTP_IO_TIMEOUT_MS / 1e3}s 无响应）`));
+		});
 		await session.command(`EHLO ${mail.host}`, 250);
 		if (mail.secure === "starttls") {
 			await session.command("STARTTLS", 220);
@@ -422,7 +432,7 @@ async function sendSmtpMail(mail) {
 /**
 * Conversation transcript extraction, LLM summarization, and styled HTML email
 * rendering.
-* @module @deepseek-ai/dsh-email-summary/src/summary
+* @module @jiobozi-dev-org/dsh-email-summary/src/summary
 */
 /** Concatenate text blocks from one message content. */
 function textOfBlocks(blocks) {
@@ -600,7 +610,7 @@ function buildEmailHtml(title, dateLabel, bodyHtml) {
 //#region lib/types/report.js
 /**
 * Pure time/schedule helpers for the periodic report.
-* @module @deepseek-ai/dsh-email-summary/src/report
+* @module @jiobozi-dev-org/dsh-email-summary/src/report
 */
 /** Format a Date as `YY年M月D日` (e.g. `26年8月26日`). */
 function formatChineseDate(date) {
@@ -675,7 +685,7 @@ function isSessionActive(firstTime, lastTime, range) {
 * Host service: summarize a conversation and email it over SMTP, with a
 * durable settings namespace, a credential-backed password, per-session
 * auto-send arming, and a generated Client Remote (`remote.emailSummary`).
-* @module @deepseek-ai/dsh-email-summary
+* @module @jiobozi-dev-org/dsh-email-summary
 */
 var __runInitializers = function(thisArg, initializers, value) {
 	var useValue = arguments.length > 2;
@@ -869,7 +879,10 @@ let EmailSummaryService = (() => {
 				const recipient = this.armed.get(payload.agent.id);
 				if (recipient === void 0 && !this.armed.has(payload.agent.id)) return;
 				this.armed.delete(payload.agent.id);
-				this.summarizeAndSend(payload.agent.id, recipient, void 0, void 0).catch(() => {});
+				this.summarizeAndSend(payload.agent.id, recipient, void 0, void 0).catch((error) => {
+					this.ctx.logger.warn("email-summary: 会话 \"%s\" 结束后自动发送失败", payload.agent.id);
+					this.ctx.logger.warn(error);
+				});
 			});
 			this.scheduleReport();
 			ctx.on("settings/updated", (ns) => {
@@ -880,9 +893,10 @@ let EmailSummaryService = (() => {
 		async resolveMail() {
 			const raw = this.settingsScope.get() ?? DEFAULT_EMAIL_SETTINGS;
 			const preset = presetById(raw.provider);
-			const host = preset !== void 0 ? preset.host : raw.smtpHost;
-			const port = preset !== void 0 ? preset.port : raw.smtpPort;
-			const secure = preset !== void 0 ? preset.secure : raw.secure;
+			const usePreset = preset !== void 0 && preset.host !== "";
+			const host = usePreset ? preset.host : raw.smtpHost;
+			const port = usePreset ? preset.port : raw.smtpPort;
+			const secure = usePreset ? preset.secure : raw.secure;
 			const password = (await this.ctx.credentials.resolve(credentialRef(SMTP_PASSWORD_ENV)))?.value ?? "";
 			const from = raw.from !== "" ? raw.from : raw.username;
 			return {
@@ -1054,7 +1068,7 @@ let EmailSummaryService = (() => {
 			if (selection === void 0 || selection.provider === "" || selection.model === "") throw new Error("无法解析可用的 LLM 模型（provider/model）。");
 			const summary = await generateSummary(this.ctx.llm, selection.provider, selection.model, capTranscript(transcript.text, 2e4), style ?? mail.style, mail.prompt);
 			const dateLabel = formatChineseDate(/* @__PURE__ */ new Date());
-			const resolvedSubject = subject && subject !== "" ? subject : `${dateLabel}dsh开发笔记：${summary.title}`;
+			const resolvedSubject = subject && subject !== "" ? subject : `${dateLabel} dsh开发笔记：${summary.title}`;
 			const html = buildEmailHtml(summary.title, dateLabel, markdownToHtml(summary.markdown));
 			await sendSmtpMail({
 				host: mail.host,
@@ -1104,7 +1118,7 @@ let EmailSummaryService = (() => {
 		async status(request) {
 			const mail = await this.resolveMail();
 			return {
-				configured: mail.host !== "" && mail.from !== "",
+				configured: mail.host !== "" && mail.from !== "" && mail.defaultRecipient !== "",
 				defaultRecipient: mail.defaultRecipient,
 				armed: this.armed.has(request.sessionId),
 				presets: [...EMAIL_PROVIDER_PRESETS]
@@ -1117,7 +1131,7 @@ let EmailSummaryService = (() => {
 			return {
 				settings: raw,
 				presets: [...EMAIL_PROVIDER_PRESETS],
-				configured: mail.host !== "" && mail.from !== "",
+				configured: mail.host !== "" && mail.from !== "" && mail.defaultRecipient !== "",
 				defaultPrompts: {
 					brief: defaultSystemPrompt("brief"),
 					detailed: defaultSystemPrompt("detailed")

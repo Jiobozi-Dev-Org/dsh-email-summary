@@ -5,7 +5,7 @@
  * connections honor an HTTP/SOCKS5 proxy from `HTTPS_PROXY`/`HTTP_PROXY`/
  * `ALL_PROXY` environment variables, falling back to the Windows system
  * proxy, so a local Clash/V2Ray tunnel can reach blocked SMTP hosts.
- * @module @deepseek-ai/dsh-email-summary/src/smtp
+ * @module @jiobozi-dev-org/dsh-email-summary/src/smtp
  */
 /** One outbound email. */
 export interface SmtpMail {
@@ -19,6 +19,8 @@ export interface SmtpMail {
     subject: string;
     html: string;
 }
+/** Build the raw message (headers + base64 body) handed to the DATA command. */
+export declare function buildMessage(mail: SmtpMail): string;
 /** Send one email over SMTP. */
 export declare function sendSmtpMail(mail: SmtpMail): Promise<void>;
 //# sourceMappingURL=smtp.d.ts.map

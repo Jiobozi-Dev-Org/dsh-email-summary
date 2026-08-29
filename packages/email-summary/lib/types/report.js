@@ -1,6 +1,6 @@
 /**
  * Pure time/schedule helpers for the periodic report.
- * @module @deepseek-ai/dsh-email-summary/src/report
+ * @module @jiobozi-dev-org/dsh-email-summary/src/report
  */
 /** Format a Date as `YY年M月D日` (e.g. `26年8月26日`). */
 export function formatChineseDate(date) {

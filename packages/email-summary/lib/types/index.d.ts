@@ -2,7 +2,7 @@
  * Host service: summarize a conversation and email it over SMTP, with a
  * durable settings namespace, a credential-backed password, per-session
  * auto-send arming, and a generated Client Remote (`remote.emailSummary`).
- * @module @deepseek-ai/dsh-email-summary
+ * @module @jiobozi-dev-org/dsh-email-summary
  */
 import { Context } from '@deepseek-ai/cordis';
 import { TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';

@@ -1,6 +1,6 @@
 /**
  * Public request/result types for the email-summary Remote.
- * @module @deepseek-ai/dsh-email-summary/types
+ * @module @jiobozi-dev-org/dsh-email-summary/types
  */
 import type { SessionId } from '@deepseek-ai/dsh-session/types';
 /** Provider presets understood by the settings surface. */
@@ -90,7 +90,7 @@ export interface ArmAutosendResult {
 }
 /** Outcome of one periodic-report run (a send attempt, or a skip with a reason). */
 export interface ReportRunResult {
-    /** Whether the run completed without error (true even when nothing matched and nothing was sent). */
+    /** Whether the report was actually sent (`true` only when an email went out). */
     ok: boolean;
     /** Whether an email was actually sent. */
     sent: boolean;

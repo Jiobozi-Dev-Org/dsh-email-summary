@@ -1,7 +1,7 @@
 /**
  * Conversation transcript extraction, LLM summarization, and styled HTML email
  * rendering.
- * @module @deepseek-ai/dsh-email-summary/src/summary
+ * @module @jiobozi-dev-org/dsh-email-summary/src/summary
  */
 import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm';
 import type { SessionEvent } from '@deepseek-ai/dsh-session/types';

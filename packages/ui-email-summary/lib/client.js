@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-	id: "@deepseek-ai/dsh-client-ui-email-summary",
+	id: "@jiobozi-dev-org/dsh-client-ui-email-summary",
 	factory: (require) => {
 		var module = { exports: {} };
 		var exports = module.exports;
@@ -9,10 +9,10 @@ window.__ModuleLoader__.load({
 		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
 		//#region \0dsh-css:D:\public\deepseek-harness\packages\client\ui-email-summary\src\client\EmailSendAction.module.css.mjs
 		const css$1 = ".UYZKjW_actionPill{height:28px;color:var(--dsw-alias-label-tertiary);cursor:pointer;background:0 0;border:none;border-radius:14px;justify-content:center;align-items:center;gap:4px;padding:0 10px;font-size:13px;display:inline-flex}.UYZKjW_actionPill:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}.UYZKjW_actionPill:disabled{cursor:default;opacity:.4}.UYZKjW_failure{text-overflow:ellipsis;white-space:nowrap;max-width:220px;color:var(--dsw-alias-label-tertiary);padding-left:4px;font-size:13px;line-height:20px;overflow:hidden}";
-		const tagId$1 = "@deepseek-ai/dsh-client-ui-email-summary/EmailSendAction.module.css";
+		const tagId$1 = "@jiobozi-dev-org/dsh-client-ui-email-summary/EmailSendAction.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
-			tag.dataset.plugin = "@deepseek-ai/dsh-client-ui-email-summary";
+			tag.dataset.plugin = "@jiobozi-dev-org/dsh-client-ui-email-summary";
 			tag.dataset.pluginCss = tagId$1;
 			tag.textContent = css$1;
 			document.head.appendChild(tag);
@@ -27,7 +27,7 @@ window.__ModuleLoader__.load({
 		* One assistant-message "send email" action in the message IconActions row.
 		* Rendered as a pill button with an icon + label, using the shared theme
 		* tokens so it sits consistently beside the copy / like / dislike icons.
-		* @module @deepseek-ai/dsh-client-ui-email-summary/client/EmailSendAction
+		* @module @jiobozi-dev-org/dsh-client-ui-email-summary/client/EmailSendAction
 		*/
 		/**
 		* A pill button that summarizes the current conversation and emails it.
@@ -66,7 +66,7 @@ window.__ModuleLoader__.load({
 		//#region lib/types/client/AutosendToggle.js
 		/**
 		* Composer auto-send toggle: arm/disarm "summarize + email at conversation end".
-		* @module @deepseek-ai/dsh-client-ui-email-summary/client/AutosendToggle
+		* @module @jiobozi-dev-org/dsh-client-ui-email-summary/client/AutosendToggle
 		*/
 		/**
 		* A checkbox in the composer tool row. When checked, the Host summarizes and
@@ -120,10 +120,10 @@ window.__ModuleLoader__.load({
 		//#endregion
 		//#region \0dsh-css:D:\public\deepseek-harness\packages\client\ui-email-summary\src\client\EmailCard.module.css.mjs
 		const css = ".NRWTCa_card{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);border-radius:12px;min-width:0;margin:0;padding:0;list-style:none;transition:border-color .16s,background .16s}.NRWTCa_card:hover{border-color:var(--dsw-alias-label-dimmed)}.NRWTCa_cardOpen{background:var(--dsw-alias-bg-layer-2);border-color:var(--dsw-alias-label-dimmed)}.NRWTCa_header{appearance:none;width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer;background:0 0;border:0;border-radius:12px;align-items:center;gap:12px;padding:14px 16px;display:flex}.NRWTCa_header:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}.NRWTCa_headText{flex-direction:column;flex:1;gap:4px;min-width:0;display:flex}.NRWTCa_name{color:var(--dsw-alias-label-primary);font-size:15px;font-weight:600;line-height:1.4}.NRWTCa_description{color:var(--dsw-alias-label-tertiary);font-size:13px;line-height:1.5}.NRWTCa_chevron{color:var(--dsw-alias-label-tertiary);flex:none;transition:transform .16s}.NRWTCa_chevronOpen{transform:rotate(180deg)}.NRWTCa_body{border-top:1px solid var(--dsw-alias-border-l2);flex-direction:column;gap:14px;min-width:0;max-width:560px;margin:0 16px;padding:16px 0 8px;display:flex}.NRWTCa_footer{border-top:1px solid var(--dsw-alias-border-l2);justify-content:flex-end;align-items:center;gap:8px;padding:12px 0 4px;display:flex}.NRWTCa_failed{min-width:0;color:var(--dsw-alias-label-error);flex:1;margin:0;font-size:12px;line-height:1.5}.NRWTCa_discard,.NRWTCa_save{appearance:none;font:inherit;cursor:pointer;border:1px solid #0000;border-radius:8px;padding:5px 14px;font-size:13px;line-height:1.5}.NRWTCa_discard{border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);background:0 0}.NRWTCa_discard:hover:not(:disabled){color:var(--dsw-alias-label-primary);border-color:var(--dsw-alias-label-dimmed)}.NRWTCa_save{background:var(--dsw-alias-label-primary);color:var(--dsw-alias-bg-layer-3)}.NRWTCa_discard:disabled,.NRWTCa_save:disabled{opacity:.4;cursor:default}";
-		const tagId = "@deepseek-ai/dsh-client-ui-email-summary/EmailCard.module.css";
+		const tagId = "@jiobozi-dev-org/dsh-client-ui-email-summary/EmailCard.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
-			tag.dataset.plugin = "@deepseek-ai/dsh-client-ui-email-summary";
+			tag.dataset.plugin = "@jiobozi-dev-org/dsh-client-ui-email-summary";
 			tag.dataset.pluginCss = tagId;
 			tag.textContent = css;
 			document.head.appendChild(tag);
@@ -149,7 +149,7 @@ window.__ModuleLoader__.load({
 		* Email-summary plugin configuration card (shown in Settings → Plugins).
 		* Collapsed by default, mirroring the shared PluginCard chrome so it sits
 		* beside the built-in shell / agent-loop / web-search cards identically.
-		* @module @deepseek-ai/dsh-client-ui-email-summary/client/EmailSettingsSection
+		* @module @jiobozi-dev-org/dsh-client-ui-email-summary/client/EmailSettingsSection
 		*/
 		const groupLabel = {
 			fontSize: 12,
@@ -248,7 +248,7 @@ window.__ModuleLoader__.load({
 						...result.settings,
 						prompt: (result.settings.prompt ?? "").trim() !== "" ? result.settings.prompt : result.defaultPrompts[style]
 					});
-				});
+				}).catch(() => {});
 				refreshReportStatus();
 				return () => {
 					alive = false;
@@ -331,7 +331,7 @@ window.__ModuleLoader__.load({
 					setDefaultPrompts(result.defaultPrompts);
 					setPassword("");
 					refreshReportStatus();
-				});
+				}).catch(() => {});
 			}, [
 				saving,
 				api,
@@ -852,7 +852,7 @@ window.__ModuleLoader__.load({
 		* Email-summary surface plugin, browser half: a settings page, a per-message
 		* "send email" action, and a composer auto-send toggle, all backed by the
 		* generated `remote.emailSummary` Host Remote.
-		* @module @deepseek-ai/dsh-client-ui-email-summary/client
+		* @module @jiobozi-dev-org/dsh-client-ui-email-summary/client
 		*/
 		/** Dictionary namespace owned by this plugin. */
 		const NS = "email";
@@ -890,42 +890,76 @@ window.__ModuleLoader__.load({
 					summaryChars: 0,
 					transcriptChars: 0,
 					error: errorText(result.error)
-				}),
+				}).catch((error) => ({
+					ok: false,
+					recipient: request.recipient ?? "",
+					subject: request.subject ?? "",
+					summaryChars: 0,
+					transcriptChars: 0,
+					error: errorText(error)
+				})),
 				armAutosend: (request) => remote.armAutosend(request).then((result) => result.ok ? result.value : {
 					ok: false,
 					armed: false
-				}),
+				}).catch(() => ({
+					ok: false,
+					armed: false
+				})),
 				status: (request) => remote.status(request).then((result) => result.ok ? result.value : {
 					configured: false,
 					defaultRecipient: "",
 					armed: false,
 					presets: []
-				}),
+				}).catch(() => ({
+					configured: false,
+					defaultRecipient: "",
+					armed: false,
+					presets: []
+				})),
 				getSettings: () => remote.getSettings().then((result) => {
 					if (result.ok) return result.value;
 					throw new Error(errorText(result.error));
+				}).catch((error) => {
+					throw error instanceof Error ? error : new Error(errorText(error));
 				}),
 				saveSettings: (request) => remote.saveSettings(request).then((result) => result.ok ? result.value : {
 					ok: false,
 					error: errorText(result.error)
-				}),
+				}).catch((error) => ({
+					ok: false,
+					error: errorText(error)
+				})),
 				setPassword: (request) => remote.setPassword(request).then((result) => result.ok ? result.value : {
 					ok: false,
 					error: errorText(result.error)
-				}),
+				}).catch((error) => ({
+					ok: false,
+					error: errorText(error)
+				})),
 				reportStatus: () => remote.reportStatus().then((result) => result.ok ? result.value : {
 					enabled: false,
 					frequency: "daily",
 					time: "09:00",
 					weekday: 1
-				}),
+				}).catch(() => ({
+					enabled: false,
+					frequency: "daily",
+					time: "09:00",
+					weekday: 1
+				})),
 				reportNow: () => remote.reportNow().then((result) => result.ok ? result.value : {
 					ok: false,
 					sent: false,
 					count: 0,
 					subject: "",
 					error: errorText(result.error)
-				})
+				}).catch((error) => ({
+					ok: false,
+					sent: false,
+					count: 0,
+					subject: "",
+					error: errorText(error)
+				}))
 			};
 			ctx.slots.inject("settings.plugin.item", () => {
 				const dispose = ctx.slots.register({

@@ -3,7 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
  * One assistant-message "send email" action in the message IconActions row.
  * Rendered as a pill button with an icon + label, using the shared theme
  * tokens so it sits consistently beside the copy / like / dislike icons.
- * @module @deepseek-ai/dsh-client-ui-email-summary/client/EmailSendAction
+ * @module @jiobozi-dev-org/dsh-client-ui-email-summary/client/EmailSendAction
  */
 import { useCallback, useState } from 'react';
 import { IconSendOutline16 } from '@deepseek-ai/dsh-client-ui-primitives';

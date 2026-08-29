@@ -5,13 +5,15 @@
  * connections honor an HTTP/SOCKS5 proxy from `HTTPS_PROXY`/`HTTP_PROXY`/
  * `ALL_PROXY` environment variables, falling back to the Windows system
  * proxy, so a local Clash/V2Ray tunnel can reach blocked SMTP hosts.
- * @module @deepseek-ai/dsh-email-summary/src/smtp
+ * @module @jiobozi-dev-org/dsh-email-summary/src/smtp
  */
 import { execFileSync } from 'node:child_process';
 import { connect as netConnect } from 'node:net';
 import { connect as tlsConnect } from 'node:tls';
 /** Connect-phase inactivity timeout (cleared once the SMTP greeting arrives). */
 const CONNECT_TIMEOUT_MS = 20000;
+/** Per-command inactivity timeout: a server stall after the greeting still fails instead of hanging. */
+const SMTP_IO_TIMEOUT_MS = 30000;
 /** One SMTP session: a command/response request-response layer over a socket. */
 class SmtpSession {
     conn;
@@ -243,20 +245,26 @@ function encodeHeader(value) {
         return value;
     return `=?utf-8?B?${b64(value)}?=`;
 }
+/** Strip CR/LF from an address so a crafted setting cannot inject SMTP headers. */
+function sanitizeAddr(value) {
+    return value.replace(/[\r\n]/g, '');
+}
 /** Build the raw message (headers + base64 body) handed to the DATA command. */
-function buildMessage(mail) {
+export function buildMessage(mail) {
     const headers = [
-        `From: <${mail.from}>`,
-        `To: <${mail.to}>`,
+        `From: <${sanitizeAddr(mail.from)}>`,
+        `To: <${sanitizeAddr(mail.to)}>`,
+        `Date: ${new Date().toUTCString()}`,
+        `Message-ID: <${Date.now()}.${Math.random().toString(36).slice(2)}@dsh-email-summary>`,
         `Subject: ${encodeHeader(mail.subject)}`,
         'MIME-Version: 1.0',
         'Content-Type: text/html; charset=utf-8',
         'Content-Transfer-Encoding: base64',
-        '',
     ].join('\r\n');
     const body = b64(mail.html);
     const wrapped = body.replace(/(.{76})/g, '$1\r\n').replace(/\r\n$/, '');
-    return headers + wrapped + '\r\n';
+    // The blank CRLF line separates the header block from the (base64) body.
+    return `${headers}\r\n\r\n${wrapped}\r\n`;
 }
 /** Send one email over SMTP. */
 export async function sendSmtpMail(mail) {
@@ -268,10 +276,18 @@ export async function sendSmtpMail(mail) {
         ? new SmtpSession(tlsConnect({ socket: raw, servername: mail.host }))
         : new SmtpSession(raw);
     try {
+        // Register the greeting expectation before feeding tunnel leftover bytes:
+        // `feed` resolves against the current pending command, so feeding first
+        // would drop the greeting when the proxy already buffered it.
+        const greeting = session.awaitReply(220);
         if (leftover !== '')
             session.feed(leftover);
-        await session.awaitReply(220);
-        raw.setTimeout(0); // clear the connect-phase timeout once the greeting arrived
+        await greeting;
+        // Switch from the connect-phase timeout to a per-command inactivity timeout,
+        // so a stalled server mid-conversation (AUTH/DATA/QUIT) fails instead of hanging.
+        raw.setTimeout(SMTP_IO_TIMEOUT_MS, () => {
+            raw.destroy(new Error(`SMTP 会话超时（${SMTP_IO_TIMEOUT_MS / 1000}s 无响应）`));
+        });
         await session.command(`EHLO ${mail.host}`, 250);
         if (mail.secure === 'starttls') {
             await session.command('STARTTLS', 220);

@@ -2,7 +2,7 @@
  * Email-summary plugin configuration card (shown in Settings → Plugins).
  * Collapsed by default, mirroring the shared PluginCard chrome so it sits
  * beside the built-in shell / agent-loop / web-search cards identically.
- * @module @deepseek-ai/dsh-client-ui-email-summary/client/EmailSettingsSection
+ * @module @jiobozi-dev-org/dsh-client-ui-email-summary/client/EmailSettingsSection
  */
 import type { InjectFace } from '@deepseek-ai/dsh-client-ui-slots';
 import type { EmailSettingsInjected } from './types.ts';

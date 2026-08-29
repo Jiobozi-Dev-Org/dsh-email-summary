@@ -3,7 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
  * Email-summary plugin configuration card (shown in Settings → Plugins).
  * Collapsed by default, mirroring the shared PluginCard chrome so it sits
  * beside the built-in shell / agent-loop / web-search cards identically.
- * @module @deepseek-ai/dsh-client-ui-email-summary/client/EmailSettingsSection
+ * @module @jiobozi-dev-org/dsh-client-ui-email-summary/client/EmailSettingsSection
  */
 import { useCallback, useEffect, useState } from 'react';
 import { IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives';
@@ -69,6 +69,9 @@ export function EmailSettingsSection({ api, t }) {
                     ? result.settings.prompt
                     : result.defaultPrompts[style],
             });
+        }).catch(() => {
+            // Keep the card collapsed when the settings read fails; never surface an
+            // unhandled rejection.
         });
         void refreshReportStatus();
         return () => { alive = false; };
@@ -142,7 +145,7 @@ export function EmailSettingsSection({ api, t }) {
             setDefaultPrompts(result.defaultPrompts);
             setPassword('');
             refreshReportStatus();
-        });
+        }).catch(() => { });
     }, [saving, api, refreshReportStatus]);
     if (settings === null)
         return null;

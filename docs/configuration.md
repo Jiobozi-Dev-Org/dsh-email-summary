@@ -27,7 +27,7 @@
 | `EMAIL_SMTP_PASSWORD` | SMTP 密码 / 授权码 | 凭证存储，设置页密码栏写入此处 |
 | `HTTPS_PROXY` / `HTTP_PROXY` / `ALL_PROXY` | 出站代理 | 如 `http://127.0.0.1:12345` 或 `socks5://...` |
 
-> 优先级：`HTTPS_PROXY` > `HTTPS_PROXY`(小写) > `HTTP_PROXY` > `ALL_PROXY` > Windows 系统代理。
+> 优先级：`HTTPS_PROXY` > `https_proxy` > `HTTP_PROXY` > `http_proxy` > `ALL_PROXY` > `all_proxy` > Windows 系统代理。
 
 ## 邮箱预设速查
 

@@ -1,6 +1,6 @@
 /**
  * Durable settings namespace, schema, and provider presets for email-summary.
- * @module @deepseek-ai/dsh-email-summary/src/spec
+ * @module @jiobozi-dev-org/dsh-email-summary/src/spec
  */
 
 import z from '@deepseek-ai/schemastery'

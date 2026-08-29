@@ -2,7 +2,7 @@
  * Email-summary surface plugin, browser half: a settings page, a per-message
  * "send email" action, and a composer auto-send toggle, all backed by the
  * generated `remote.emailSummary` Host Remote.
- * @module @deepseek-ai/dsh-client-ui-email-summary/client
+ * @module @jiobozi-dev-org/dsh-client-ui-email-summary/client
  */
 import { EmailSendAction } from "./EmailSendAction.js";
 import { AutosendToggle } from "./AutosendToggle.js";
@@ -31,6 +31,9 @@ export function apply(ctx) {
     const remote = ctx.remote.emailSummary;
     const t = ctx.locale.bind(NS);
     // Fold the carrier's RemoteResult wrapper away so components read plain data.
+    // Every method also folds a transport-level rejection (a thrown Host handler or
+    // a dropped connection) into a plain fallback, so call sites' `.then` always
+    // runs and in-flight UI state can never be left stuck.
     const api = {
         sendNow: request => remote.sendNow(request).then(result => result.ok
             ? result.value
@@ -41,20 +44,35 @@ export function apply(ctx) {
                 summaryChars: 0,
                 transcriptChars: 0,
                 error: errorText(result.error),
-            }),
-        armAutosend: request => remote.armAutosend(request).then(result => result.ok ? result.value : { ok: false, armed: false }),
-        status: request => remote.status(request).then(result => result.ok ? result.value : { configured: false, defaultRecipient: '', armed: false, presets: [] }),
+            }).catch((error) => ({
+            ok: false,
+            recipient: request.recipient ?? '',
+            subject: request.subject ?? '',
+            summaryChars: 0,
+            transcriptChars: 0,
+            error: errorText(error),
+        })),
+        armAutosend: request => remote.armAutosend(request).then(result => result.ok ? result.value : { ok: false, armed: false })
+            .catch(() => ({ ok: false, armed: false })),
+        status: request => remote.status(request).then(result => result.ok ? result.value : { configured: false, defaultRecipient: '', armed: false, presets: [] })
+            .catch(() => ({ configured: false, defaultRecipient: '', armed: false, presets: [] })),
         getSettings: () => remote.getSettings().then((result) => {
             if (result.ok)
                 return result.value;
             throw new Error(errorText(result.error));
+        }).catch((error) => {
+            throw error instanceof Error ? error : new Error(errorText(error));
         }),
-        saveSettings: request => remote.saveSettings(request).then(result => result.ok ? result.value : { ok: false, error: errorText(result.error) }),
-        setPassword: request => remote.setPassword(request).then(result => result.ok ? result.value : { ok: false, error: errorText(result.error) }),
-        reportStatus: () => remote.reportStatus().then(result => result.ok ? result.value : { enabled: false, frequency: 'daily', time: '09:00', weekday: 1 }),
+        saveSettings: request => remote.saveSettings(request).then(result => result.ok ? result.value : { ok: false, error: errorText(result.error) })
+            .catch((error) => ({ ok: false, error: errorText(error) })),
+        setPassword: request => remote.setPassword(request).then(result => result.ok ? result.value : { ok: false, error: errorText(result.error) })
+            .catch((error) => ({ ok: false, error: errorText(error) })),
+        reportStatus: () => remote.reportStatus().then(result => result.ok ? result.value : { enabled: false, frequency: 'daily', time: '09:00', weekday: 1 })
+            .catch(() => ({ enabled: false, frequency: 'daily', time: '09:00', weekday: 1 })),
         reportNow: () => remote.reportNow().then(result => result.ok
             ? result.value
-            : { ok: false, sent: false, count: 0, subject: '', error: errorText(result.error) }),
+            : { ok: false, sent: false, count: 0, subject: '', error: errorText(result.error) })
+            .catch((error) => ({ ok: false, sent: false, count: 0, subject: '', error: errorText(error) })),
     };
     ctx.slots.inject('settings.plugin.item', () => {
         const dispose = ctx.slots.register({

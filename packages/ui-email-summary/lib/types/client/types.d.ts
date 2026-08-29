@@ -2,10 +2,10 @@
  * Client-side types for the email-summary surface: the unwrapped business API
  * face (RemoteResult already folded) and the injected faces each slot entry
  * receives.
- * @module @deepseek-ai/dsh-client-ui-email-summary/client/types
+ * @module @jiobozi-dev-org/dsh-client-ui-email-summary/client/types
  */
 import type { SessionId } from '@deepseek-ai/dsh-session/types';
-import type { EmailProviderPreset, EmailSummarySettings, ReportRunResult, ReportStatusResult, SendEmailResult } from '@deepseek-ai/dsh-email-summary/types';
+import type { EmailProviderPreset, EmailSummarySettings, ReportRunResult, ReportStatusResult, SendEmailResult } from '@jiobozi-dev-org/dsh-email-summary/types';
 import type { EmailKey } from './locales.ts';
 /**
  * Unwrapped business face of the generated `remote.emailSummary` namespace.

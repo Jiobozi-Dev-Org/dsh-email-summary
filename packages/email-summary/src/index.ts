@@ -2,7 +2,7 @@
  * Host service: summarize a conversation and email it over SMTP, with a
  * durable settings namespace, a credential-backed password, per-session
  * auto-send arming, and a generated Client Remote (`remote.emailSummary`).
- * @module @deepseek-ai/dsh-email-summary
+ * @module @jiobozi-dev-org/dsh-email-summary
  */
 
 import { Context } from '@deepseek-ai/cordis'
@@ -104,8 +104,10 @@ export class EmailSummaryService extends TypertRemoteService {
       const recipient = this.armed.get(payload.agent.id)
       if (recipient === undefined && !this.armed.has(payload.agent.id)) return
       this.armed.delete(payload.agent.id)
-      void this.summarizeAndSend(payload.agent.id, recipient, undefined, undefined).catch(() => {
-        // Auto-send failures are non-fatal to the agent turn; the button path reports errors.
+      void this.summarizeAndSend(payload.agent.id, recipient, undefined, undefined).catch((error: unknown) => {
+        // Auto-send failures are non-fatal to the agent turn, but must be visible.
+        this.ctx.logger.warn('email-summary: 会话 "%s" 结束后自动发送失败', payload.agent.id)
+        this.ctx.logger.warn(error)
       })
     })
 
@@ -119,9 +121,12 @@ export class EmailSummaryService extends TypertRemoteService {
   private async resolveMail(): Promise<ResolvedMail> {
     const raw = this.settingsScope.get() ?? DEFAULT_EMAIL_SETTINGS
     const preset = presetById(raw.provider)
-    const host = preset !== undefined ? preset.host : raw.smtpHost
-    const port = preset !== undefined ? preset.port : raw.smtpPort
-    const secure = (preset !== undefined ? preset.secure : raw.secure) as 'starttls' | 'ssl' | 'none'
+    // Only apply a preset that carries a real host; the `custom` preset has an
+    // empty host and must defer to the user's typed smtpHost/port/secure.
+    const usePreset = preset !== undefined && preset.host !== ''
+    const host = usePreset ? preset.host : raw.smtpHost
+    const port = usePreset ? preset.port : raw.smtpPort
+    const secure = (usePreset ? preset.secure : raw.secure) as 'starttls' | 'ssl' | 'none'
     const resolved = await this.ctx.credentials.resolve(credentialRef(SMTP_PASSWORD_ENV))
     const password = resolved?.value ?? ''
     const from = raw.from !== '' ? raw.from : raw.username
@@ -307,7 +312,7 @@ export class EmailSummaryService extends TypertRemoteService {
     const dateLabel = formatChineseDate(new Date())
     const resolvedSubject = subject && subject !== ''
       ? subject
-      : `${dateLabel}dsh开发笔记：${summary.title}`
+      : `${dateLabel} dsh开发笔记：${summary.title}`
     const html = buildEmailHtml(summary.title, dateLabel, markdownToHtml(summary.markdown))
 
     await sendSmtpMail({
@@ -365,7 +370,7 @@ export class EmailSummaryService extends TypertRemoteService {
   async status(request: { sessionId: SessionId }): Promise<EmailStatusResult> {
     const mail = await this.resolveMail()
     return {
-      configured: mail.host !== '' && mail.from !== '',
+      configured: mail.host !== '' && mail.from !== '' && mail.defaultRecipient !== '',
       defaultRecipient: mail.defaultRecipient,
       armed: this.armed.has(request.sessionId),
       presets: [...EMAIL_PROVIDER_PRESETS],
@@ -380,7 +385,7 @@ export class EmailSummaryService extends TypertRemoteService {
     return {
       settings: raw,
       presets: [...EMAIL_PROVIDER_PRESETS],
-      configured: mail.host !== '' && mail.from !== '',
+      configured: mail.host !== '' && mail.from !== '' && mail.defaultRecipient !== '',
       defaultPrompts: {
         brief: defaultSystemPrompt('brief'),
         detailed: defaultSystemPrompt('detailed'),

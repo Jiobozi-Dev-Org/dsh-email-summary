@@ -3,7 +3,7 @@ import type {
   RemoteResult,
   TypertRemoteContribution,
 } from '@deepseek-ai/dsh-typert-protocol'
-import type { ArmAutosendRequest, ArmAutosendResult, EmailProviderPreset, EmailStatusResult, EmailSummarySettings, ReportRunResult, ReportStatusResult, SendEmailRequest, SendEmailResult } from '@deepseek-ai/dsh-email-summary/types'
+import type { ArmAutosendRequest, ArmAutosendResult, EmailProviderPreset, EmailStatusResult, EmailSummarySettings, ReportRunResult, ReportStatusResult, SendEmailRequest, SendEmailResult } from '@jiobozi-dev-org/dsh-email-summary/types'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 
 declare module '@deepseek-ai/dsh-typert-protocol' {

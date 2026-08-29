@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 /**
  * Composer auto-send toggle: arm/disarm "summarize + email at conversation end".
- * @module @deepseek-ai/dsh-client-ui-email-summary/client/AutosendToggle
+ * @module @jiobozi-dev-org/dsh-client-ui-email-summary/client/AutosendToggle
  */
 import { useCallback, useEffect, useState } from 'react';
 /**

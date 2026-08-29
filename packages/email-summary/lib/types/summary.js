@@ -1,7 +1,7 @@
 /**
  * Conversation transcript extraction, LLM summarization, and styled HTML email
  * rendering.
- * @module @deepseek-ai/dsh-email-summary/src/summary
+ * @module @jiobozi-dev-org/dsh-email-summary/src/summary
  */
 import { createUserMessage, BlockAssembler, deepFreeze } from '@deepseek-ai/dsh-llm';
 import { deriveEventMessage } from '@deepseek-ai/dsh-session/surface';
