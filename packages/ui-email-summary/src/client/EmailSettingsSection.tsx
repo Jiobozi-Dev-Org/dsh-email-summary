@@ -296,14 +296,26 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
                   <label style={inlineCol}>
                     <span style={fieldLabel}>{t('settings.reportTime')}</span>
                     <input
+                      type="time"
                       style={input}
-                      value={settings.reportTime}
-                      placeholder="09:00"
+                      value={/^\d{2}:\d{2}$/.test(settings.reportTime) ? settings.reportTime : '09:00'}
                       onChange={event => patch({ reportTime: event.target.value })}
                     />
                     <span style={fieldHint}>{t('settings.reportTimeHint')}</span>
                   </label>
                 </div>
+                <label style={inlineCol}>
+                  <span style={fieldLabel}>{t('settings.reportWindow')}</span>
+                  <select
+                    style={input}
+                    value={settings.reportWindow}
+                    onChange={event => patch({ reportWindow: event.target.value })}
+                  >
+                    <option value="calendar">{t('settings.reportWindowCalendar')}</option>
+                    <option value="rolling">{t('settings.reportWindowRolling')}</option>
+                  </select>
+                  <span style={fieldHint}>{t('settings.reportWindowHint')}</span>
+                </label>
                 {settings.reportFrequency === 'weekly' && (
                   <label style={inlineCol}>
                     <span style={fieldLabel}>{t('settings.reportWeekday')}</span>

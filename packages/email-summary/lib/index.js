@@ -28,7 +28,8 @@ const DEFAULT_EMAIL_SETTINGS = {
 	reportEnabled: false,
 	reportFrequency: "daily",
 	reportTime: "09:00",
-	reportWeekday: 1
+	reportWeekday: 1,
+	reportWindow: "calendar"
 };
 /** Settings schema (strings/numbers only; enums validated at read time). */
 const EmailSummarySettingsSchema = z.object({
@@ -44,7 +45,8 @@ const EmailSummarySettingsSchema = z.object({
 	reportEnabled: z.boolean(),
 	reportFrequency: z.string(),
 	reportTime: z.string(),
-	reportWeekday: z.number()
+	reportWeekday: z.number(),
+	reportWindow: z.string()
 });
 /** SMTP provider presets: Gmail / QQ / 163 / 126 / Outlook + custom. */
 const EMAIL_PROVIDER_PRESETS = Object.freeze([
@@ -626,15 +628,35 @@ function msUntilNextReport(frequency, time, weekday, now = /* @__PURE__ */ new D
 	if (next.getTime() <= now.getTime()) next.setDate(next.getDate() + (frequency === "weekly" ? 7 : 1));
 	return Math.max(0, next.getTime() - now.getTime());
 }
-/** Start-of-period timestamp: today 00:00, or Monday 00:00 for weekly. */
-function reportPeriodStart(frequency, now) {
-	const start = new Date(now);
-	start.setHours(0, 0, 0, 0);
-	if (frequency === "weekly") {
-		const sinceMonday = (start.getDay() + 6) % 7;
-		start.setDate(start.getDate() - sinceMonday);
+/** One calendar day in milliseconds. */
+const DAY_MS = 1440 * 60 * 1e3;
+/**
+* Compute the session window a periodic report summarizes.
+* - `rolling`: the 24h (daily) or 7 days (weekly) immediately before `now`.
+* - `calendar` (default): the completed previous natural day (yesterday 00:00
+*   → today 00:00), or the previous natural week (last Monday 00:00 → this
+*   Monday 00:00).
+*/
+function reportWindowRange(frequency, window, now = /* @__PURE__ */ new Date()) {
+	if (window === "rolling") {
+		const spanMs = (frequency === "weekly" ? 7 : 1) * DAY_MS;
+		return {
+			start: now.getTime() - spanMs,
+			end: now.getTime()
+		};
 	}
-	return start.getTime();
+	const end = new Date(now);
+	end.setHours(0, 0, 0, 0);
+	if (frequency === "weekly") {
+		const sinceMonday = (end.getDay() + 6) % 7;
+		end.setDate(end.getDate() - sinceMonday);
+	}
+	const start = new Date(end);
+	start.setDate(start.getDate() - (frequency === "weekly" ? 7 : 1));
+	return {
+		start: start.getTime(),
+		end: end.getTime()
+	};
 }
 //#endregion
 //#region lib/types/index.js
@@ -917,10 +939,13 @@ let EmailSummaryService = (() => {
 					error: reason
 				};
 			}
-			const periodStart = reportPeriodStart(frequency, /* @__PURE__ */ new Date());
-			const recent = (await this.ctx.sessionQuery.listSessions()).filter((record) => (record.header?.createdAt ?? 0) >= periodStart).slice(0, 20);
+			const range = reportWindowRange(frequency, raw.reportWindow === "rolling" ? "rolling" : "calendar", /* @__PURE__ */ new Date());
+			const recent = (await this.ctx.sessionQuery.listSessions()).filter((record) => {
+				const createdAt = record.header?.createdAt ?? 0;
+				return createdAt >= range.start && createdAt < range.end;
+			}).slice(0, 20);
 			if (recent.length === 0) {
-				const reason = "定时报告未发送：当天/本周没有新建的会话";
+				const reason = "定时报告未发送：所选时间范围内没有新建的会话";
 				this.ctx.logger.info("email-summary: %s", reason);
 				return {
 					ok: false,

@@ -25,6 +25,7 @@ const _deepseek_ai_dsh_email_summary_emailSummary_getSettings_result$schema = z.
   'reportFrequency': z.string(),
   'reportTime': z.string(),
   'reportWeekday': z.number(),
+  'reportWindow': z.string(),
 }),
   'presets': z.array(z.object({
   'id': z.union([z.literal("gmail"), z.literal("qq"), z.literal("163"), z.literal("126"), z.literal("outlook"), z.literal("custom")]),
@@ -73,6 +74,7 @@ const _deepseek_ai_dsh_email_summary_emailSummary_saveSettings_parameter_0$schem
   'reportFrequency': z.string().optional(),
   'reportTime': z.string().optional(),
   'reportWeekday': z.number().optional(),
+  'reportWindow': z.string().optional(),
 }),
 })
 const _deepseek_ai_dsh_email_summary_emailSummary_saveSettings_result$schema = z.object({
@@ -146,7 +148,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#ArmAutosendResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_armAutosend_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":329,"column":3},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":333,"column":3},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/getSettings',
@@ -161,7 +163,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/getSettings:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_getSettings_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":352,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":356,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/reportNow',
@@ -176,7 +178,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#ReportRunResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_reportNow_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":414,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":418,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/reportStatus',
@@ -191,7 +193,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#ReportStatusResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_reportStatus_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":395,"column":3},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":399,"column":3},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/saveSettings',
@@ -216,7 +218,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/saveSettings:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_saveSettings_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":368,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":372,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/sendNow',
@@ -241,7 +243,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#SendEmailResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_sendNow_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":312,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":316,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/setPassword',
@@ -266,7 +268,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/setPassword:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_setPassword_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":382,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":386,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/status',
@@ -291,7 +293,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#EmailStatusResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_status_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":340,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":344,"column":9},
     },
   ],
   model: {
@@ -392,7 +394,7 @@ export const TYPERT = {
           },
           {
             "name": "EmailSummarySettings",
-            "declaration": "export interface EmailSummarySettings {\n    provider: string;\n    smtpHost: string;\n    smtpPort: number;\n    secure: string;\n    username: string;\n    from: string;\n    defaultRecipient: string;\n    style: string;\n    prompt: string;\n    reportEnabled: boolean;\n    reportFrequency: string;\n    reportTime: string;\n    reportWeekday: number;\n}"
+            "declaration": "export interface EmailSummarySettings {\n    provider: string;\n    smtpHost: string;\n    smtpPort: number;\n    secure: string;\n    username: string;\n    from: string;\n    defaultRecipient: string;\n    style: string;\n    prompt: string;\n    reportEnabled: boolean;\n    reportFrequency: string;\n    reportTime: string;\n    reportWeekday: number;\n    reportWindow: string;\n}"
           },
           {
             "name": "EmailSummaryStyle",

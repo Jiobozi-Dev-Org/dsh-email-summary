@@ -26,7 +26,7 @@ import {
 } from './spec.ts'
 import { sendSmtpMail } from './smtp.ts'
 import { buildTranscript, capTranscript, generateSummary, markdownToHtml, buildEmailHtml, defaultSystemPrompt } from './summary.ts'
-import { formatChineseDate, msUntilNextReport, reportPeriodStart } from './report.ts'
+import { formatChineseDate, msUntilNextReport, reportWindowRange } from './report.ts'
 import type {
   ArmAutosendRequest,
   ArmAutosendResult,
@@ -186,14 +186,18 @@ export class EmailSummaryService extends TypertRemoteService {
       return { ok: false, sent: false, count: 0, subject: '', error: reason }
     }
 
-    const periodStart = reportPeriodStart(frequency, new Date())
+    const window = raw.reportWindow === 'rolling' ? 'rolling' : 'calendar'
+    const range = reportWindowRange(frequency, window, new Date())
     const records = await this.ctx.sessionQuery.listSessions()
-    // `listSessions()` is newest-first; take the first (newest) 20 of the period.
+    // `listSessions()` is newest-first; take the first (newest) 20 of the window.
     const recent = records
-      .filter(record => (record.header?.createdAt ?? 0) >= periodStart)
+      .filter(record => {
+        const createdAt = record.header?.createdAt ?? 0
+        return createdAt >= range.start && createdAt < range.end
+      })
       .slice(0, 20)
     if (recent.length === 0) {
-      const reason = '定时报告未发送：当天/本周没有新建的会话'
+      const reason = '定时报告未发送：所选时间范围内没有新建的会话'
       this.ctx.logger.info('email-summary: %s', reason)
       return { ok: false, sent: false, count: 0, subject: '', error: reason }
     }

@@ -3,7 +3,7 @@ import {
   formatChineseDate,
   msUntilNextReport,
   parseReportTime,
-  reportPeriodStart,
+  reportWindowRange,
 } from '../src/report.ts'
 
 const HOUR = 3600000
@@ -50,16 +50,43 @@ describe('msUntilNextReport (weekly)', () => {
   })
 })
 
-describe('reportPeriodStart', () => {
-  it('daily starts at today 00:00', () => {
-    const now = new Date(2026, 0, 7, 15, 30, 0)
-    expect(reportPeriodStart('daily', now)).toBe(new Date(2026, 0, 7).getTime())
+describe('reportWindowRange (daily)', () => {
+  it('calendar spans yesterday 00:00 → today 00:00', () => {
+    const now = new Date(2026, 0, 7, 15, 30, 0) // Wed
+    const range = reportWindowRange('daily', 'calendar', now)
+    expect(range.start).toBe(new Date(2026, 0, 6).getTime())
+    expect(range.end).toBe(new Date(2026, 0, 7).getTime())
   })
 
-  it('weekly starts at Monday 00:00', () => {
+  it('rolling spans the 24h before now', () => {
     const now = new Date(2026, 0, 7, 15, 30, 0)
-    const start = reportPeriodStart('weekly', now)
-    expect(new Date(start).getDay()).toBe(1) // Monday
-    expect(start).toBeLessThanOrEqual(now.getTime())
+    const range = reportWindowRange('daily', 'rolling', now)
+    expect(range.start).toBe(now.getTime() - DAY)
+    expect(range.end).toBe(now.getTime())
+  })
+})
+
+describe('reportWindowRange (weekly)', () => {
+  it('calendar spans last Monday 00:00 → this Monday 00:00', () => {
+    const now = new Date(2026, 0, 7, 15, 30, 0) // Wed
+    const range = reportWindowRange('weekly', 'calendar', now)
+    expect(new Date(range.start).getDay()).toBe(1) // Monday
+    expect(new Date(range.end).getDay()).toBe(1) // Monday
+    expect(range.end - range.start).toBe(7 * DAY)
+    expect(range.start).toBeLessThan(now.getTime())
+  })
+
+  it('calendar from a Monday yields the previous Monday', () => {
+    const now = new Date(2026, 0, 5, 9, 0, 0) // Monday
+    const range = reportWindowRange('weekly', 'calendar', now)
+    expect(range.start).toBe(new Date(2025, 11, 29).getTime())
+    expect(range.end).toBe(new Date(2026, 0, 5).getTime())
+  })
+
+  it('rolling spans the 7 days before now', () => {
+    const now = new Date(2026, 0, 7, 15, 30, 0)
+    const range = reportWindowRange('weekly', 'rolling', now)
+    expect(range.start).toBe(now.getTime() - 7 * DAY)
+    expect(range.end).toBe(now.getTime())
   })
 })

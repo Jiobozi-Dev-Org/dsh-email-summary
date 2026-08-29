@@ -20,6 +20,7 @@ export const DEFAULT_EMAIL_SETTINGS = {
     reportFrequency: 'daily',
     reportTime: '09:00',
     reportWeekday: 1,
+    reportWindow: 'calendar',
 };
 /** Settings schema (strings/numbers only; enums validated at read time). */
 export const EmailSummarySettingsSchema = z.object({
@@ -36,6 +37,7 @@ export const EmailSummarySettingsSchema = z.object({
     reportFrequency: z.string(),
     reportTime: z.string(),
     reportWeekday: z.number(),
+    reportWindow: z.string(),
 });
 /** SMTP provider presets: Gmail / QQ / 163 / 126 / Outlook + custom. */
 export const EMAIL_PROVIDER_PRESETS = Object.freeze([

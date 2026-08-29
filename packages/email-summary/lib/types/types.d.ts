@@ -50,6 +50,8 @@ export interface EmailSummarySettings {
     reportTime: string;
     /** For weekly reports: 0 (Sunday) … 6 (Saturday). */
     reportWeekday: number;
+    /** Summary window: `calendar` (previous natural day/week) or `rolling` (last 24h / 7 days). */
+    reportWindow: string;
 }
 /** Send-one-summary request from the Client. */
 export interface SendEmailRequest {

@@ -39,6 +39,10 @@ export declare const zh: {
     'settings.reportTime': string;
     'settings.reportTimeHint': string;
     'settings.reportWeekday': string;
+    'settings.reportWindow': string;
+    'settings.reportWindowCalendar': string;
+    'settings.reportWindowRolling': string;
+    'settings.reportWindowHint': string;
     'settings.reportHint': string;
     'settings.reportNext': string;
     'settings.reportLastSent': string;
@@ -104,6 +108,10 @@ export declare const en: {
     'settings.reportTime': string;
     'settings.reportTimeHint': string;
     'settings.reportWeekday': string;
+    'settings.reportWindow': string;
+    'settings.reportWindowCalendar': string;
+    'settings.reportWindowRolling': string;
+    'settings.reportWindowHint': string;
     'settings.reportHint': string;
     'settings.reportNext': string;
     'settings.reportLastSent': string;

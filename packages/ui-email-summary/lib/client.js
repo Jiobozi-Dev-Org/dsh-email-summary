@@ -569,59 +569,87 @@ window.__ModuleLoader__.load({
 									style: fieldHint,
 									children: t("settings.reportHint")
 								}),
-								settings.reportEnabled && (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsxs)("div", {
-									style: inlineRow,
-									children: [(0, react_jsx_runtime.jsxs)("label", {
-										style: inlineCol,
-										children: [(0, react_jsx_runtime.jsx)("span", {
-											style: fieldLabel,
-											children: t("settings.reportFrequency")
-										}), (0, react_jsx_runtime.jsxs)("select", {
-											style: input,
-											value: settings.reportFrequency,
-											onChange: (event) => patch({ reportFrequency: event.target.value }),
-											children: [(0, react_jsx_runtime.jsx)("option", {
-												value: "daily",
-												children: t("settings.daily")
-											}), (0, react_jsx_runtime.jsx)("option", {
-												value: "weekly",
-												children: t("settings.weekly")
+								settings.reportEnabled && (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+									(0, react_jsx_runtime.jsxs)("div", {
+										style: inlineRow,
+										children: [(0, react_jsx_runtime.jsxs)("label", {
+											style: inlineCol,
+											children: [(0, react_jsx_runtime.jsx)("span", {
+												style: fieldLabel,
+												children: t("settings.reportFrequency")
+											}), (0, react_jsx_runtime.jsxs)("select", {
+												style: input,
+												value: settings.reportFrequency,
+												onChange: (event) => patch({ reportFrequency: event.target.value }),
+												children: [(0, react_jsx_runtime.jsx)("option", {
+													value: "daily",
+													children: t("settings.daily")
+												}), (0, react_jsx_runtime.jsx)("option", {
+													value: "weekly",
+													children: t("settings.weekly")
+												})]
 											})]
+										}), (0, react_jsx_runtime.jsxs)("label", {
+											style: inlineCol,
+											children: [
+												(0, react_jsx_runtime.jsx)("span", {
+													style: fieldLabel,
+													children: t("settings.reportTime")
+												}),
+												(0, react_jsx_runtime.jsx)("input", {
+													type: "time",
+													style: input,
+													value: /^\d{2}:\d{2}$/.test(settings.reportTime) ? settings.reportTime : "09:00",
+													onChange: (event) => patch({ reportTime: event.target.value })
+												}),
+												(0, react_jsx_runtime.jsx)("span", {
+													style: fieldHint,
+													children: t("settings.reportTimeHint")
+												})
+											]
 										})]
-									}), (0, react_jsx_runtime.jsxs)("label", {
+									}),
+									(0, react_jsx_runtime.jsxs)("label", {
 										style: inlineCol,
 										children: [
 											(0, react_jsx_runtime.jsx)("span", {
 												style: fieldLabel,
-												children: t("settings.reportTime")
+												children: t("settings.reportWindow")
 											}),
-											(0, react_jsx_runtime.jsx)("input", {
+											(0, react_jsx_runtime.jsxs)("select", {
 												style: input,
-												value: settings.reportTime,
-												placeholder: "09:00",
-												onChange: (event) => patch({ reportTime: event.target.value })
+												value: settings.reportWindow,
+												onChange: (event) => patch({ reportWindow: event.target.value }),
+												children: [(0, react_jsx_runtime.jsx)("option", {
+													value: "calendar",
+													children: t("settings.reportWindowCalendar")
+												}), (0, react_jsx_runtime.jsx)("option", {
+													value: "rolling",
+													children: t("settings.reportWindowRolling")
+												})]
 											}),
 											(0, react_jsx_runtime.jsx)("span", {
 												style: fieldHint,
-												children: t("settings.reportTimeHint")
+												children: t("settings.reportWindowHint")
 											})
 										]
-									})]
-								}), settings.reportFrequency === "weekly" && (0, react_jsx_runtime.jsxs)("label", {
-									style: inlineCol,
-									children: [(0, react_jsx_runtime.jsx)("span", {
-										style: fieldLabel,
-										children: t("settings.reportWeekday")
-									}), (0, react_jsx_runtime.jsx)("select", {
-										style: input,
-										value: settings.reportWeekday,
-										onChange: (event) => patch({ reportWeekday: Number(event.target.value) }),
-										children: t("settings.weekdays").split(",").map((label, idx) => (0, react_jsx_runtime.jsx)("option", {
-											value: idx,
-											children: label
-										}, idx))
-									})]
-								})] }),
+									}),
+									settings.reportFrequency === "weekly" && (0, react_jsx_runtime.jsxs)("label", {
+										style: inlineCol,
+										children: [(0, react_jsx_runtime.jsx)("span", {
+											style: fieldLabel,
+											children: t("settings.reportWeekday")
+										}), (0, react_jsx_runtime.jsx)("select", {
+											style: input,
+											value: settings.reportWeekday,
+											onChange: (event) => patch({ reportWeekday: Number(event.target.value) }),
+											children: t("settings.weekdays").split(",").map((label, idx) => (0, react_jsx_runtime.jsx)("option", {
+												value: idx,
+												children: label
+											}, idx))
+										})]
+									})
+								] }),
 								reportStatus !== null && (0, react_jsx_runtime.jsxs)("div", {
 									style: {
 										display: "flex",
@@ -733,7 +761,11 @@ window.__ModuleLoader__.load({
 			"settings.reportTime": "发送时间",
 			"settings.reportTimeHint": "24 小时制，如 09:00",
 			"settings.reportWeekday": "周几",
-			"settings.reportHint": "到点自动汇总当天/本周新建的会话，发给默认收件人",
+			"settings.reportWindow": "汇总范围",
+			"settings.reportWindowCalendar": "前一个自然日 / 周",
+			"settings.reportWindowRolling": "发送前 24 小时 / 7 天",
+			"settings.reportWindowHint": "自然日：昨天（周报为上一周）；滚动：从发送时刻往前推",
+			"settings.reportHint": "到点自动汇总所选范围内的会话，发给默认收件人",
 			"settings.reportNext": "下次发送：",
 			"settings.reportLastSent": "上次已发送：",
 			"settings.reportLastFailed": "上次失败：",
@@ -790,7 +822,11 @@ window.__ModuleLoader__.load({
 			"settings.reportTime": "Send time",
 			"settings.reportTimeHint": "24h, e.g. 09:00",
 			"settings.reportWeekday": "Weekday",
-			"settings.reportHint": "Automatically summarize sessions created today / this week and email the default recipient",
+			"settings.reportWindow": "Summary window",
+			"settings.reportWindowCalendar": "Previous day / week",
+			"settings.reportWindowRolling": "Last 24h / 7 days",
+			"settings.reportWindowHint": "Calendar: yesterday (previous week for weekly); rolling: counted back from the send moment",
+			"settings.reportHint": "Automatically summarize sessions in the selected window and email the default recipient",
 			"settings.reportNext": "Next send: ",
 			"settings.reportLastSent": "Last sent: ",
 			"settings.reportLastFailed": "Last failed: ",

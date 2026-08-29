@@ -33,14 +33,28 @@ export function msUntilNextReport(frequency, time, weekday, now = new Date()) {
     }
     return Math.max(0, next.getTime() - now.getTime());
 }
-/** Start-of-period timestamp: today 00:00, or Monday 00:00 for weekly. */
-export function reportPeriodStart(frequency, now) {
-    const start = new Date(now);
-    start.setHours(0, 0, 0, 0);
-    if (frequency === 'weekly') {
-        const sinceMonday = (start.getDay() + 6) % 7;
-        start.setDate(start.getDate() - sinceMonday);
+/** One calendar day in milliseconds. */
+const DAY_MS = 24 * 60 * 60 * 1000;
+/**
+ * Compute the session window a periodic report summarizes.
+ * - `rolling`: the 24h (daily) or 7 days (weekly) immediately before `now`.
+ * - `calendar` (default): the completed previous natural day (yesterday 00:00
+ *   → today 00:00), or the previous natural week (last Monday 00:00 → this
+ *   Monday 00:00).
+ */
+export function reportWindowRange(frequency, window, now = new Date()) {
+    if (window === 'rolling') {
+        const spanMs = (frequency === 'weekly' ? 7 : 1) * DAY_MS;
+        return { start: now.getTime() - spanMs, end: now.getTime() };
     }
-    return start.getTime();
+    const end = new Date(now);
+    end.setHours(0, 0, 0, 0);
+    if (frequency === 'weekly') {
+        const sinceMonday = (end.getDay() + 6) % 7;
+        end.setDate(end.getDate() - sinceMonday); // this Monday 00:00
+    }
+    const start = new Date(end);
+    start.setDate(start.getDate() - (frequency === 'weekly' ? 7 : 1));
+    return { start: start.getTime(), end: end.getTime() };
 }
 //# sourceMappingURL=report.js.map
