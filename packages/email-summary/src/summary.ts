@@ -24,13 +24,22 @@ export interface Transcript {
   text: string
 }
 
+/** Inclusive-start, exclusive-end time window an event must fall inside. */
+export interface TranscriptRange {
+  start: number
+  end: number
+}
+
 /**
  * Fold surface events into a readable `User:` / `Assistant:` transcript,
- * skipping tool results and non-human injected context.
+ * skipping tool results and non-human injected context. When `range` is given,
+ * only messages whose event time falls inside it are folded — used by the
+ * periodic report to summarize a window's activity instead of the whole log.
  */
-export function buildTranscript(events: readonly SessionEvent[]): Transcript {
+export function buildTranscript(events: readonly SessionEvent[], range?: TranscriptRange): Transcript {
   const lines: string[] = []
   for (const event of events) {
+    if (range !== undefined && (event.time < range.start || event.time >= range.end)) continue
     const message = deriveEventMessage(event)
     if (message == null) continue
     if (message.role === 'user') {

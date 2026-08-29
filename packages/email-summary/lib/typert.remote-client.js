@@ -145,7 +145,7 @@ export const TYPERT_REMOTE = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#ArmAutosendResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_armAutosend_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":333,"column":3},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":354,"column":3},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/getSettings',
@@ -160,7 +160,7 @@ export const TYPERT_REMOTE = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/getSettings:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_getSettings_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":356,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":377,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/reportNow',
@@ -175,7 +175,7 @@ export const TYPERT_REMOTE = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#ReportRunResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_reportNow_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":418,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":439,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/reportStatus',
@@ -190,7 +190,7 @@ export const TYPERT_REMOTE = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#ReportStatusResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_reportStatus_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":399,"column":3},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":420,"column":3},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/saveSettings',
@@ -215,7 +215,7 @@ export const TYPERT_REMOTE = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/saveSettings:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_saveSettings_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":372,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":393,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/sendNow',
@@ -240,7 +240,7 @@ export const TYPERT_REMOTE = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#SendEmailResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_sendNow_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":316,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":337,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/setPassword',
@@ -265,7 +265,7 @@ export const TYPERT_REMOTE = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/setPassword:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_setPassword_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":386,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":407,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/status',
@@ -290,7 +290,7 @@ export const TYPERT_REMOTE = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#EmailStatusResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_status_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":344,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":365,"column":9},
     },
   ],
 }

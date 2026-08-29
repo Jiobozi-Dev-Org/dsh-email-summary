@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   formatChineseDate,
+  isSessionActive,
   msUntilNextReport,
   parseReportTime,
   reportWindowRange,
@@ -88,5 +89,20 @@ describe('reportWindowRange (weekly)', () => {
     const range = reportWindowRange('weekly', 'rolling', now)
     expect(range.start).toBe(now.getTime() - 7 * DAY)
     expect(range.end).toBe(now.getTime())
+  })
+})
+
+describe('isSessionActive', () => {
+  const range = { start: 1000, end: 2000 }
+
+  it('includes a timeline overlapping the window', () => {
+    expect(isSessionActive(500, 1500, range)).toBe(true) // started before, ended inside
+    expect(isSessionActive(1500, 2500, range)).toBe(true) // started inside, ended after
+    expect(isSessionActive(1500, 1900, range)).toBe(true) // fully inside
+  })
+
+  it('excludes a timeline entirely outside the window', () => {
+    expect(isSessionActive(0, 999, range)).toBe(false) // before
+    expect(isSessionActive(2000, 3000, range)).toBe(false) // after (end is exclusive)
   })
 })

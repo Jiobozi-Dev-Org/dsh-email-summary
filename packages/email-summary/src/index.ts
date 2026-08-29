@@ -26,7 +26,7 @@ import {
 } from './spec.ts'
 import { sendSmtpMail } from './smtp.ts'
 import { buildTranscript, capTranscript, generateSummary, markdownToHtml, buildEmailHtml, defaultSystemPrompt } from './summary.ts'
-import { formatChineseDate, msUntilNextReport, reportWindowRange } from './report.ts'
+import { formatChineseDate, msUntilNextReport, reportWindowRange, isSessionActive } from './report.ts'
 import type {
   ArmAutosendRequest,
   ArmAutosendResult,
@@ -189,18 +189,37 @@ export class EmailSummaryService extends TypertRemoteService {
     const window = raw.reportWindow === 'rolling' ? 'rolling' : 'calendar'
     const range = reportWindowRange(frequency, window, new Date())
     const records = await this.ctx.sessionQuery.listSessions()
-    // `listSessions()` is newest-first; take the first (newest) 20 of the window.
-    const recent = records
-      .filter(record => {
-        const createdAt = record.header?.createdAt ?? 0
-        return createdAt >= range.start && createdAt < range.end
-      })
-      .slice(0, 20)
-    if (recent.length === 0) {
-      const reason = '定时报告未发送：所选时间范围内没有新建的会话'
+
+    // A session is in scope when it had activity in the window — judged by its
+    // event timeline, not its creation time — so an older conversation that
+    // received new messages in the window is still summarized.
+    const candidates: Array<{ sessionId: SessionId; activity: number }> = []
+    for (const record of records) {
+      const createdAt = record.header.createdAt ?? 0
+      if (createdAt >= range.end) continue // created after the window ends
+      let firstTime = createdAt
+      let lastTime = createdAt
+      try {
+        const events = await this.ctx.sessionQuery.listEvents(record.header.id)
+        if (events.length > 0) {
+          firstTime = events[0]!.time
+          lastTime = events.at(-1)!.time
+        }
+      } catch (error) {
+        // Fall back to creation time when the log cannot be read.
+        this.ctx.logger.warn('email-summary: 读取会话 "%s" 活动时间失败，回退到创建时间', record.header.id)
+        this.ctx.logger.warn(error)
+      }
+      if (!isSessionActive(firstTime, lastTime, range)) continue
+      candidates.push({ sessionId: record.header.id, activity: lastTime })
+    }
+    if (candidates.length === 0) {
+      const reason = '定时报告未发送：所选时间范围内没有活跃的会话'
       this.ctx.logger.info('email-summary: %s', reason)
       return { ok: false, sent: false, count: 0, subject: '', error: reason }
     }
+    candidates.sort((a, b) => b.activity - a.activity)
+    const recent = candidates.slice(0, 20)
 
     const selection = this.ctx.agentDefaultModel.currentSelection()
     if (selection === undefined || selection.provider === '' || selection.model === '') {
@@ -210,10 +229,12 @@ export class EmailSummaryService extends TypertRemoteService {
     }
 
     const sections: string[] = []
-    for (const record of recent) {
+    for (const candidate of recent) {
       try {
-        const surface = await this.ctx.sessionQuery.readSurface(record.header.id)
-        const transcript = buildTranscript(surface.events)
+        const surface = await this.ctx.sessionQuery.readSurface(candidate.sessionId)
+        // Scope the transcript to the window so an old conversation contributes
+        // only its new messages, not its entire history.
+        const transcript = buildTranscript(surface.events, range)
         if (transcript.text.trim() === '') continue
         const summary = await generateSummary(
           this.ctx.llm,
@@ -225,7 +246,7 @@ export class EmailSummaryService extends TypertRemoteService {
         sections.push(markdownToHtml(`## ${summary.title}\n\n${summary.markdown}`))
       } catch (error) {
         // One session failing must not fail the whole report, but it must be visible.
-        this.ctx.logger.warn('email-summary: 定时报告对会话 "%s" 总结失败', record.header.id)
+        this.ctx.logger.warn('email-summary: 定时报告对会话 "%s" 总结失败', candidate.sessionId)
         this.ctx.logger.warn(error)
       }
     }

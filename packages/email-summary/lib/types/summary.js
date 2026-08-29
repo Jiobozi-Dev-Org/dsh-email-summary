@@ -16,11 +16,15 @@ function textOfBlocks(blocks) {
 }
 /**
  * Fold surface events into a readable `User:` / `Assistant:` transcript,
- * skipping tool results and non-human injected context.
+ * skipping tool results and non-human injected context. When `range` is given,
+ * only messages whose event time falls inside it are folded — used by the
+ * periodic report to summarize a window's activity instead of the whole log.
  */
-export function buildTranscript(events) {
+export function buildTranscript(events, range) {
     const lines = [];
     for (const event of events) {
+        if (range !== undefined && (event.time < range.start || event.time >= range.end))
+            continue;
         const message = deriveEventMessage(event);
         if (message == null)
             continue;

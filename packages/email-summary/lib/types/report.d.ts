@@ -24,4 +24,10 @@ export interface ReportWindowRange {
  *   Monday 00:00).
  */
 export declare function reportWindowRange(frequency: string, window: string, now?: Date): ReportWindowRange;
+/**
+ * Whether a session is in scope for a report window: its event timeline
+ * `[firstTime, lastTime]` overlaps `[start, end)`. A session with no events is
+ * judged by its creation time as both bounds.
+ */
+export declare function isSessionActive(firstTime: number, lastTime: number, range: ReportWindowRange): boolean;
 //# sourceMappingURL=report.d.ts.map

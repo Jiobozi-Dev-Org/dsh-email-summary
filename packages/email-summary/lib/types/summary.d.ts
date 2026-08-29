@@ -10,11 +10,18 @@ import type { EmailSummaryStyle } from './types.ts';
 export interface Transcript {
     text: string;
 }
+/** Inclusive-start, exclusive-end time window an event must fall inside. */
+export interface TranscriptRange {
+    start: number;
+    end: number;
+}
 /**
  * Fold surface events into a readable `User:` / `Assistant:` transcript,
- * skipping tool results and non-human injected context.
+ * skipping tool results and non-human injected context. When `range` is given,
+ * only messages whose event time falls inside it are folded — used by the
+ * periodic report to summarize a window's activity instead of the whole log.
  */
-export declare function buildTranscript(events: readonly SessionEvent[]): Transcript;
+export declare function buildTranscript(events: readonly SessionEvent[], range?: TranscriptRange): Transcript;
 /** Cap a transcript to `max` chars, keeping the head and tail. */
 export declare function capTranscript(text: string, max: number): string;
 /** Default system instruction for the summarization call. */

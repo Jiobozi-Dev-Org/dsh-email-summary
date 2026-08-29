@@ -71,3 +71,12 @@ export function reportWindowRange(frequency: string, window: string, now: Date =
   start.setDate(start.getDate() - (frequency === 'weekly' ? 7 : 1))
   return { start: start.getTime(), end: end.getTime() }
 }
+
+/**
+ * Whether a session is in scope for a report window: its event timeline
+ * `[firstTime, lastTime]` overlaps `[start, end)`. A session with no events is
+ * judged by its creation time as both bounds.
+ */
+export function isSessionActive(firstTime: number, lastTime: number, range: ReportWindowRange): boolean {
+  return lastTime >= range.start && firstTime < range.end
+}

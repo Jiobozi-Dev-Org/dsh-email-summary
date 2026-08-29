@@ -432,11 +432,14 @@ function textOfBlocks(blocks) {
 }
 /**
 * Fold surface events into a readable `User:` / `Assistant:` transcript,
-* skipping tool results and non-human injected context.
+* skipping tool results and non-human injected context. When `range` is given,
+* only messages whose event time falls inside it are folded — used by the
+* periodic report to summarize a window's activity instead of the whole log.
 */
-function buildTranscript(events) {
+function buildTranscript(events, range) {
 	const lines = [];
 	for (const event of events) {
+		if (range !== void 0 && (event.time < range.start || event.time >= range.end)) continue;
 		const message = deriveEventMessage(event);
 		if (message == null) continue;
 		if (message.role === "user") {
@@ -657,6 +660,14 @@ function reportWindowRange(frequency, window, now = /* @__PURE__ */ new Date()) 
 		start: start.getTime(),
 		end: end.getTime()
 	};
+}
+/**
+* Whether a session is in scope for a report window: its event timeline
+* `[firstTime, lastTime]` overlaps `[start, end)`. A session with no events is
+* judged by its creation time as both bounds.
+*/
+function isSessionActive(firstTime, lastTime, range) {
+	return lastTime >= range.start && firstTime < range.end;
 }
 //#endregion
 //#region lib/types/index.js
@@ -940,12 +951,31 @@ let EmailSummaryService = (() => {
 				};
 			}
 			const range = reportWindowRange(frequency, raw.reportWindow === "rolling" ? "rolling" : "calendar", /* @__PURE__ */ new Date());
-			const recent = (await this.ctx.sessionQuery.listSessions()).filter((record) => {
-				const createdAt = record.header?.createdAt ?? 0;
-				return createdAt >= range.start && createdAt < range.end;
-			}).slice(0, 20);
-			if (recent.length === 0) {
-				const reason = "定时报告未发送：所选时间范围内没有新建的会话";
+			const records = await this.ctx.sessionQuery.listSessions();
+			const candidates = [];
+			for (const record of records) {
+				const createdAt = record.header.createdAt ?? 0;
+				if (createdAt >= range.end) continue;
+				let firstTime = createdAt;
+				let lastTime = createdAt;
+				try {
+					const events = await this.ctx.sessionQuery.listEvents(record.header.id);
+					if (events.length > 0) {
+						firstTime = events[0].time;
+						lastTime = events.at(-1).time;
+					}
+				} catch (error) {
+					this.ctx.logger.warn("email-summary: 读取会话 \"%s\" 活动时间失败，回退到创建时间", record.header.id);
+					this.ctx.logger.warn(error);
+				}
+				if (!isSessionActive(firstTime, lastTime, range)) continue;
+				candidates.push({
+					sessionId: record.header.id,
+					activity: lastTime
+				});
+			}
+			if (candidates.length === 0) {
+				const reason = "定时报告未发送：所选时间范围内没有活跃的会话";
 				this.ctx.logger.info("email-summary: %s", reason);
 				return {
 					ok: false,
@@ -955,6 +985,8 @@ let EmailSummaryService = (() => {
 					error: reason
 				};
 			}
+			candidates.sort((a, b) => b.activity - a.activity);
+			const recent = candidates.slice(0, 20);
 			const selection = this.ctx.agentDefaultModel.currentSelection();
 			if (selection === void 0 || selection.provider === "" || selection.model === "") {
 				const reason = "定时报告未发送：无法解析可用的 LLM 模型（provider/model）";
@@ -968,13 +1000,13 @@ let EmailSummaryService = (() => {
 				};
 			}
 			const sections = [];
-			for (const record of recent) try {
-				const transcript = buildTranscript((await this.ctx.sessionQuery.readSurface(record.header.id)).events);
+			for (const candidate of recent) try {
+				const transcript = buildTranscript((await this.ctx.sessionQuery.readSurface(candidate.sessionId)).events, range);
 				if (transcript.text.trim() === "") continue;
 				const summary = await generateSummary(this.ctx.llm, selection.provider, selection.model, capTranscript(transcript.text, 2e4), "brief");
 				sections.push(markdownToHtml(`## ${summary.title}\n\n${summary.markdown}`));
 			} catch (error) {
-				this.ctx.logger.warn("email-summary: 定时报告对会话 \"%s\" 总结失败", record.header.id);
+				this.ctx.logger.warn("email-summary: 定时报告对会话 \"%s\" 总结失败", candidate.sessionId);
 				this.ctx.logger.warn(error);
 			}
 			if (sections.length === 0) {

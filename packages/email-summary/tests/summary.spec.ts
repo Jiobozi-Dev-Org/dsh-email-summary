@@ -53,6 +53,17 @@ describe('buildTranscript', () => {
     } as unknown as SessionEvent
     expect(buildTranscript([injected]).text).toBe('')
   })
+
+  it('scopes to a time range when given', () => {
+    const early = { ...userEvent, time: 1000 } as SessionEvent
+    const late = {
+      ...userEvent,
+      seq: 3,
+      time: 3000,
+      data: { ...userEvent.data, content: [{ type: 'text', text: '窗口内的新消息' }] },
+    } as SessionEvent
+    expect(buildTranscript([early, late], { start: 2000, end: 4000 }).text).toBe('User: 窗口内的新消息')
+  })
 })
 
 describe('capTranscript', () => {
