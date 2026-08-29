@@ -48,6 +48,19 @@ import { formatChineseDate, msUntilNextReport, reportPeriodStart } from "./repor
 export { EMAIL_PROVIDER_PRESETS, EMAIL_SUMMARY_SETTINGS_NAMESPACE, DEFAULT_EMAIL_SETTINGS } from "./spec.js";
 /** Environment-variable name for the SMTP password. */
 const SMTP_PASSWORD_ENV = 'EMAIL_SMTP_PASSWORD';
+/** Human-readable duration for schedule logs (seconds/minutes/hours/days). */
+function formatDelay(ms) {
+    const seconds = Math.round(ms / 1000);
+    if (seconds < 90)
+        return `${seconds} 秒`;
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 90)
+        return `${minutes} 分钟`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 48)
+        return `${hours} 小时`;
+    return `${Math.round(hours / 24)} 天`;
+}
 /** Host service for conversation summarization + SMTP delivery. */
 let EmailSummaryService = (() => {
     let _classSuper = TypertRemoteService;
@@ -58,6 +71,8 @@ let EmailSummaryService = (() => {
     let _getSettings_decorators;
     let _saveSettings_decorators;
     let _setPassword_decorators;
+    let _reportStatus_decorators;
+    let _reportNow_decorators;
     return class EmailSummaryService extends _classSuper {
         static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
@@ -67,12 +82,16 @@ let EmailSummaryService = (() => {
             _getSettings_decorators = [Remote('getSettings')];
             _saveSettings_decorators = [Remote('saveSettings')];
             _setPassword_decorators = [Remote('setPassword')];
+            _reportStatus_decorators = [Remote('reportStatus')];
+            _reportNow_decorators = [Remote('reportNow')];
             __esDecorate(this, null, _sendNow_decorators, { kind: "method", name: "sendNow", static: false, private: false, access: { has: obj => "sendNow" in obj, get: obj => obj.sendNow }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate(this, null, _armAutosend_decorators, { kind: "method", name: "armAutosend", static: false, private: false, access: { has: obj => "armAutosend" in obj, get: obj => obj.armAutosend }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate(this, null, _status_decorators, { kind: "method", name: "status", static: false, private: false, access: { has: obj => "status" in obj, get: obj => obj.status }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate(this, null, _getSettings_decorators, { kind: "method", name: "getSettings", static: false, private: false, access: { has: obj => "getSettings" in obj, get: obj => obj.getSettings }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate(this, null, _saveSettings_decorators, { kind: "method", name: "saveSettings", static: false, private: false, access: { has: obj => "saveSettings" in obj, get: obj => obj.saveSettings }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate(this, null, _setPassword_decorators, { kind: "method", name: "setPassword", static: false, private: false, access: { has: obj => "setPassword" in obj, get: obj => obj.setPassword }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate(this, null, _reportStatus_decorators, { kind: "method", name: "reportStatus", static: false, private: false, access: { has: obj => "reportStatus" in obj, get: obj => obj.reportStatus }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate(this, null, _reportNow_decorators, { kind: "method", name: "reportNow", static: false, private: false, access: { has: obj => "reportNow" in obj, get: obj => obj.reportNow }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
         }
         static inject = ['llm', 'sessionQuery', 'settings', 'credentials', 'agentDefaultModel', 'timer'];
@@ -80,6 +99,8 @@ let EmailSummaryService = (() => {
         armed = (__runInitializers(this, _instanceExtraInitializers), new Map());
         /** Disposer of the currently scheduled periodic report, when armed. */
         reportTimer;
+        /** Most recent periodic-report outcome, for the settings surface and logs. */
+        lastReport;
         /** The durable settings scope (structural type; matches `SettingsScope<T>`). */
         settingsScope;
         constructor(ctx) {
@@ -134,27 +155,59 @@ let EmailSummaryService = (() => {
             if (!raw.reportEnabled)
                 return;
             const delay = msUntilNextReport(raw.reportFrequency, raw.reportTime, raw.reportWeekday);
+            this.ctx.logger.info('email-summary: 定时报告已排程，%s 后触发（%s %s）', formatDelay(delay), raw.reportFrequency, raw.reportTime);
             this.reportTimer = this.ctx.timeout(() => {
-                void this.sendReport().catch(() => { }).finally(() => { this.scheduleReport(); });
+                void this.sendReport()
+                    .then((result) => {
+                    this.lastReport = {
+                        at: Date.now(),
+                        ok: result.ok,
+                        ...(result.error !== undefined ? { error: result.error } : {}),
+                    };
+                })
+                    .catch((error) => {
+                    const message = error instanceof Error ? error.message : String(error);
+                    this.ctx.logger.warn('email-summary: 定时报告发送失败');
+                    this.ctx.logger.warn(error);
+                    this.lastReport = { at: Date.now(), ok: false, error: message };
+                })
+                    .finally(() => { this.scheduleReport(); });
             }, delay);
         }
         /** Summarize the sessions created in the current period and email the report. */
         async sendReport() {
             const raw = this.settingsScope.get() ?? DEFAULT_EMAIL_SETTINGS;
             const mail = await this.resolveMail();
-            if (mail.host === '' || mail.from === '' || mail.defaultRecipient === '')
-                return;
             const frequency = raw.reportFrequency === 'weekly' ? 'weekly' : 'daily';
+            const dateLabel = formatChineseDate(new Date());
+            const reportName = frequency === 'weekly' ? '周报' : '日报';
+            if (mail.host === '' || mail.from === '' || mail.defaultRecipient === '') {
+                const missing = [
+                    mail.host === '' ? 'SMTP 主机' : null,
+                    mail.from === '' ? '发件人邮箱' : null,
+                    mail.defaultRecipient === '' ? '默认收件人' : null,
+                ].filter((item) => item !== null).join('、');
+                const reason = `定时报告未发送：请先配置${missing}`;
+                this.ctx.logger.warn('email-summary: %s', reason);
+                return { ok: false, sent: false, count: 0, subject: '', error: reason };
+            }
             const periodStart = reportPeriodStart(frequency, new Date());
             const records = await this.ctx.sessionQuery.listSessions();
+            // `listSessions()` is newest-first; take the first (newest) 20 of the period.
             const recent = records
                 .filter(record => (record.header?.createdAt ?? 0) >= periodStart)
-                .slice(-20);
-            if (recent.length === 0)
-                return;
+                .slice(0, 20);
+            if (recent.length === 0) {
+                const reason = '定时报告未发送：当天/本周没有新建的会话';
+                this.ctx.logger.info('email-summary: %s', reason);
+                return { ok: false, sent: false, count: 0, subject: '', error: reason };
+            }
             const selection = this.ctx.agentDefaultModel.currentSelection();
-            if (selection === undefined || selection.provider === '' || selection.model === '')
-                return;
+            if (selection === undefined || selection.provider === '' || selection.model === '') {
+                const reason = '定时报告未发送：无法解析可用的 LLM 模型（provider/model）';
+                this.ctx.logger.warn('email-summary: %s', reason);
+                return { ok: false, sent: false, count: 0, subject: '', error: reason };
+            }
             const sections = [];
             for (const record of recent) {
                 try {
@@ -165,12 +218,18 @@ let EmailSummaryService = (() => {
                     const summary = await generateSummary(this.ctx.llm, selection.provider, selection.model, capTranscript(transcript.text, 20000), 'brief');
                     sections.push(markdownToHtml(`## ${summary.title}\n\n${summary.markdown}`));
                 }
-                catch { /* one session failing must not fail the whole report */ }
+                catch (error) {
+                    // One session failing must not fail the whole report, but it must be visible.
+                    this.ctx.logger.warn('email-summary: 定时报告对会话 "%s" 总结失败', record.header.id);
+                    this.ctx.logger.warn(error);
+                }
             }
-            if (sections.length === 0)
-                return;
-            const dateLabel = formatChineseDate(new Date());
-            const reportName = frequency === 'weekly' ? '周报' : '日报';
+            if (sections.length === 0) {
+                const reason = '定时报告未发送：没有可总结的对话内容';
+                this.ctx.logger.warn('email-summary: %s', reason);
+                return { ok: false, sent: false, count: 0, subject: '', error: reason };
+            }
+            const subject = `${dateLabel} dsh${reportName}`;
             const html = buildEmailHtml(`${dateLabel} ${reportName}`, dateLabel, sections.join(''));
             await sendSmtpMail({
                 host: mail.host,
@@ -180,9 +239,11 @@ let EmailSummaryService = (() => {
                 password: mail.password,
                 from: mail.from,
                 to: mail.defaultRecipient,
-                subject: `${dateLabel} dsh${reportName}`,
+                subject,
                 html,
             });
+            this.ctx.logger.info('email-summary: 定时报告已发送 %s（%d 个会话 → %s）', subject, sections.length, mail.defaultRecipient);
+            return { ok: true, sent: true, count: sections.length, subject };
         }
         /** Summarize one session and send it; throws on failure. */
         async summarizeAndSend(sessionId, recipient, subject, style) {
@@ -300,6 +361,41 @@ let EmailSummaryService = (() => {
             }
             catch (error) {
                 return { ok: false, error: error instanceof Error ? error.message : String(error) };
+            }
+        }
+        /** Read the periodic-report scheduling state for the settings surface. */
+        reportStatus() {
+            const raw = this.settingsScope.get() ?? DEFAULT_EMAIL_SETTINGS;
+            const enabled = raw.reportEnabled === true;
+            const base = {
+                enabled,
+                frequency: raw.reportFrequency,
+                time: raw.reportTime,
+                weekday: raw.reportWeekday,
+                ...(this.lastReport !== undefined ? { last: this.lastReport } : {}),
+            };
+            if (!enabled)
+                return base;
+            return {
+                ...base,
+                nextFireAt: Date.now() + msUntilNextReport(raw.reportFrequency, raw.reportTime, raw.reportWeekday),
+            };
+        }
+        /** Run the periodic report immediately (test button), reporting the outcome. */
+        async reportNow() {
+            try {
+                const result = await this.sendReport();
+                this.lastReport = {
+                    at: Date.now(),
+                    ok: result.ok,
+                    ...(result.error !== undefined ? { error: result.error } : {}),
+                };
+                return result;
+            }
+            catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                this.lastReport = { at: Date.now(), ok: false, error: message };
+                return { ok: false, sent: false, count: 0, subject: '', error: message };
             }
         }
     };

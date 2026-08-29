@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace } from '@deepseek-ai/dsh-client-ui-slots'
-import type { EmailProviderPreset, EmailSummarySettings } from '@deepseek-ai/dsh-email-summary/types'
+import type { EmailProviderPreset, EmailSummarySettings, ReportStatusResult } from '@deepseek-ai/dsh-email-summary/types'
 import type { EmailSettingsInjected } from './types.ts'
 import css from './EmailCard.module.css'
 
@@ -46,6 +46,25 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
   const [defaultPrompts, setDefaultPrompts] = useState<{ brief: string; detailed: string }>({ brief: '', detailed: '' })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [reportStatus, setReportStatus] = useState<ReportStatusResult | null>(null)
+  const [reporting, setReporting] = useState(false)
+  const [reportMessage, setReportMessage] = useState<string | null>(null)
+
+  const refreshReportStatus = useCallback(() => {
+    void api.reportStatus().then(setReportStatus)
+  }, [api])
+
+  const onReportNow = useCallback(() => {
+    if (reporting) return
+    setReporting(true)
+    setReportMessage(null)
+    void api.reportNow().then((result) => {
+      setReporting(false)
+      if (result.ok) setReportMessage(`${t('settings.reportNowSent')}（${result.count} 个会话）`)
+      else setReportMessage(`${t('settings.reportNowFailed')}：${result.error ?? ''}`)
+      refreshReportStatus()
+    })
+  }, [reporting, api, t, refreshReportStatus])
 
   useEffect(() => {
     let alive = true
@@ -63,8 +82,9 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
           : result.defaultPrompts[style],
       })
     })
+    void refreshReportStatus()
     return () => { alive = false }
-  }, [api])
+  }, [api, refreshReportStatus])
 
   const patch = useCallback((partial: Partial<EmailSummarySettings>) => {
     setSettings(current => (current === null ? current : { ...current, ...partial }))
@@ -114,8 +134,9 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
       if (password !== '') await api.setPassword({ password })
       setSaving(false)
       setMessage(saved.ok ? t('settings.saved') : (saved.error ?? t('settings.error')))
+      refreshReportStatus()
     })()
-  }, [settings, saving, password, defaultPrompts, api, t])
+  }, [settings, saving, password, defaultPrompts, api, t, refreshReportStatus])
 
   const discard = useCallback(() => {
     if (saving) return
@@ -131,8 +152,9 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
       setPresets(result.presets)
       setDefaultPrompts(result.defaultPrompts)
       setPassword('')
+      refreshReportStatus()
     })
-  }, [saving, api])
+  }, [saving, api, refreshReportStatus])
 
   if (settings === null) return null
 
@@ -298,6 +320,29 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
                 )}
               </>
             )}
+            {reportStatus !== null && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {reportStatus.enabled && reportStatus.nextFireAt !== undefined && (
+                  <div style={fieldHint}>{t('settings.reportNext')}{new Date(reportStatus.nextFireAt).toLocaleString()}</div>
+                )}
+                {reportStatus.last !== undefined && (
+                  <div style={reportStatus.last.ok ? fieldHint : { ...fieldHint, color: '#dc2626' }}>
+                    {reportStatus.last.ok
+                      ? `${t('settings.reportLastSent')}${new Date(reportStatus.last.at).toLocaleString()}`
+                      : `${t('settings.reportLastFailed')}${reportStatus.last.error ?? ''}`}
+                  </div>
+                )}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={onReportNow}
+              disabled={reporting}
+              style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.15)', background: 'transparent', color: '#2563eb', fontSize: 12, cursor: 'pointer', alignSelf: 'flex-start' }}
+            >
+              {reporting ? t('settings.reportNowPending') : t('settings.reportNow')}
+            </button>
+            {reportMessage !== null && <div role="status" style={fieldHint}>{reportMessage}</div>}
           </FieldGroup>
 
           <div className={css.footer}>

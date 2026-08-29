@@ -5,7 +5,7 @@
  * @module @deepseek-ai/dsh-client-ui-email-summary/client/types
  */
 import type { SessionId } from '@deepseek-ai/dsh-session/types';
-import type { EmailProviderPreset, EmailSummarySettings, SendEmailResult } from '@deepseek-ai/dsh-email-summary/types';
+import type { EmailProviderPreset, EmailSummarySettings, ReportRunResult, ReportStatusResult, SendEmailResult } from '@deepseek-ai/dsh-email-summary/types';
 import type { EmailKey } from './locales.ts';
 /**
  * Unwrapped business face of the generated `remote.emailSummary` namespace.
@@ -56,6 +56,8 @@ export interface EmailSummaryApi {
         ok: boolean;
         error?: string;
     }>;
+    reportStatus(): Promise<ReportStatusResult>;
+    reportNow(): Promise<ReportRunResult>;
 }
 /** Injected face of one assistant-message "send email" action. */
 export interface EmailSendInjected {

@@ -3,13 +3,15 @@ import type {
   RemoteResult,
   TypertRemoteContribution,
 } from '@deepseek-ai/dsh-typert-protocol'
-import type { ArmAutosendRequest, ArmAutosendResult, EmailProviderPreset, EmailStatusResult, EmailSummarySettings, SendEmailRequest, SendEmailResult } from '@deepseek-ai/dsh-email-summary/types'
+import type { ArmAutosendRequest, ArmAutosendResult, EmailProviderPreset, EmailStatusResult, EmailSummarySettings, ReportRunResult, ReportStatusResult, SendEmailRequest, SendEmailResult } from '@deepseek-ai/dsh-email-summary/types'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 
 declare module '@deepseek-ai/dsh-typert-protocol' {
   interface TypertRemoteNamespace$656d61696c53756d6d617279 {
     armAutosend: (request: ArmAutosendRequest) => Promise<RemoteResult<ArmAutosendResult>>
     getSettings: () => Promise<RemoteResult<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean; defaultPrompts: { brief: string; detailed: string; }; }>>
+    reportNow: () => Promise<RemoteResult<ReportRunResult>>
+    reportStatus: () => Promise<RemoteResult<ReportStatusResult>>
     saveSettings: (request: { patch: Partial<EmailSummarySettings>; }) => Promise<RemoteResult<{ ok: boolean; error?: string; }>>
     sendNow: (request: SendEmailRequest) => Promise<RemoteResult<SendEmailResult>>
     setPassword: (request: { password: string; }) => Promise<RemoteResult<{ ok: boolean; error?: string; }>>
@@ -18,6 +20,8 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
   interface TypertRemoteMap {
     'emailSummary/armAutosend': (request: ArmAutosendRequest) => Promise<RemoteResult<ArmAutosendResult>>
     'emailSummary/getSettings': () => Promise<RemoteResult<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean; defaultPrompts: { brief: string; detailed: string; }; }>>
+    'emailSummary/reportNow': () => Promise<RemoteResult<ReportRunResult>>
+    'emailSummary/reportStatus': () => Promise<RemoteResult<ReportStatusResult>>
     'emailSummary/saveSettings': (request: { patch: Partial<EmailSummarySettings>; }) => Promise<RemoteResult<{ ok: boolean; error?: string; }>>
     'emailSummary/sendNow': (request: SendEmailRequest) => Promise<RemoteResult<SendEmailResult>>
     'emailSummary/setPassword': (request: { password: string; }) => Promise<RemoteResult<{ ok: boolean; error?: string; }>>

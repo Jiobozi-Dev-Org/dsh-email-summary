@@ -7,7 +7,7 @@
 import { Context } from '@deepseek-ai/cordis';
 import { TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
 import type { SessionId } from '@deepseek-ai/dsh-session/types';
-import type { ArmAutosendRequest, ArmAutosendResult, EmailProviderPreset, EmailStatusResult, EmailSummarySettings, SendEmailRequest, SendEmailResult } from './types.ts';
+import type { ArmAutosendRequest, ArmAutosendResult, EmailProviderPreset, EmailStatusResult, EmailSummarySettings, ReportRunResult, ReportStatusResult, SendEmailRequest, SendEmailResult } from './types.ts';
 export type * from './types.ts';
 export { EMAIL_PROVIDER_PRESETS, EMAIL_SUMMARY_SETTINGS_NAMESPACE, DEFAULT_EMAIL_SETTINGS } from './spec.ts';
 declare module '@deepseek-ai/cordis' {
@@ -22,6 +22,8 @@ export declare class EmailSummaryService extends TypertRemoteService {
     private readonly armed;
     /** Disposer of the currently scheduled periodic report, when armed. */
     private reportTimer;
+    /** Most recent periodic-report outcome, for the settings surface and logs. */
+    private lastReport;
     /** The durable settings scope (structural type; matches `SettingsScope<T>`). */
     private readonly settingsScope;
     constructor(ctx: Context);
@@ -65,6 +67,10 @@ export declare class EmailSummaryService extends TypertRemoteService {
         ok: boolean;
         error?: string;
     }>;
+    /** Read the periodic-report scheduling state for the settings surface. */
+    reportStatus(): ReportStatusResult;
+    /** Run the periodic report immediately (test button), reporting the outcome. */
+    reportNow(): Promise<ReportRunResult>;
 }
 export default EmailSummaryService;
 //# sourceMappingURL=index.d.ts.map

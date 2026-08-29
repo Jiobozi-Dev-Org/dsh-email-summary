@@ -75,6 +75,12 @@ export function apply(ctx: ClientContext): void {
       result.ok ? result.value : { ok: false, error: errorText(result.error) }),
     setPassword: request => remote.setPassword(request).then(result =>
       result.ok ? result.value : { ok: false, error: errorText(result.error) }),
+    reportStatus: () => remote.reportStatus().then(result =>
+      result.ok ? result.value : { enabled: false, frequency: 'daily', time: '09:00', weekday: 1 }),
+    reportNow: () => remote.reportNow().then(result =>
+      result.ok
+        ? result.value
+        : { ok: false, sent: false, count: 0, subject: '', error: errorText(result.error) }),
   }
 
   ctx.slots.inject('settings.plugin.item', () => {

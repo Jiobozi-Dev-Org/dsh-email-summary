@@ -103,6 +103,36 @@ export interface ArmAutosendResult {
   armed: boolean
 }
 
+/** Outcome of one periodic-report run (a send attempt, or a skip with a reason). */
+export interface ReportRunResult {
+  /** Whether the run completed without error (true even when nothing matched and nothing was sent). */
+  ok: boolean
+  /** Whether an email was actually sent. */
+  sent: boolean
+  /** Number of sessions summarized into the report. */
+  count: number
+  /** Subject used when sent; empty when nothing was sent. */
+  subject: string
+  /** Human-readable failure or skip reason when `ok` is false. */
+  error?: string
+}
+
+/** Live scheduling state of the periodic report, read by the settings surface. */
+export interface ReportStatusResult {
+  /** Whether the periodic (daily/weekly) report is enabled. */
+  enabled: boolean
+  /** `daily` or `weekly`. */
+  frequency: string
+  /** Send time in `HH:MM` (24h). */
+  time: string
+  /** For weekly reports: 0 (Sunday) … 6 (Saturday). */
+  weekday: number
+  /** Epoch ms of the next scheduled fire; undefined when disabled. */
+  nextFireAt?: number
+  /** Most recent run outcome, when one has occurred this process lifetime. */
+  last?: { at: number; ok: boolean; error?: string }
+}
+
 /** Configuration status read by the settings surface and toggles. */
 export interface EmailStatusResult {
   /** Whether SMTP configuration is complete enough to send. */

@@ -39,6 +39,25 @@ const _deepseek_ai_dsh_email_summary_emailSummary_getSettings_result$schema = z.
   'detailed': z.string(),
 }),
 })
+const _deepseek_ai_dsh_email_summary_emailSummary_reportNow_result$schema = z.object({
+  'ok': z.boolean(),
+  'sent': z.boolean(),
+  'count': z.number(),
+  'subject': z.string(),
+  'error': z.string().optional(),
+})
+const _deepseek_ai_dsh_email_summary_emailSummary_reportStatus_result$schema = z.object({
+  'enabled': z.boolean(),
+  'frequency': z.string(),
+  'time': z.string(),
+  'weekday': z.number(),
+  'nextFireAt': z.number().optional(),
+  'last': z.object({
+  'at': z.number(),
+  'ok': z.boolean(),
+  'error': z.string().optional(),
+}).optional(),
+})
 const _deepseek_ai_dsh_email_summary_emailSummary_saveSettings_parameter_0$schema = z.object({
   'patch': z.object({
   'provider': z.string().optional(),
@@ -127,7 +146,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#ArmAutosendResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_armAutosend_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":268,"column":3},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":329,"column":3},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/getSettings',
@@ -142,7 +161,37 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/getSettings:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_getSettings_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":291,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":352,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-email-summary#emailSummary/reportNow',
+      service: 'emailSummary',
+      namespace: 'emailSummary',
+      method: 'reportNow',
+      invocation: { kind: 'direct' },
+      parameters: [
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-email-summary/types#ReportRunResult',
+        schema: _deepseek_ai_dsh_email_summary_emailSummary_reportNow_result$schema,
+      },
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":414,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-email-summary#emailSummary/reportStatus',
+      service: 'emailSummary',
+      namespace: 'emailSummary',
+      method: 'reportStatus',
+      invocation: { kind: 'direct' },
+      parameters: [
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-email-summary/types#ReportStatusResult',
+        schema: _deepseek_ai_dsh_email_summary_emailSummary_reportStatus_result$schema,
+      },
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":395,"column":3},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/saveSettings',
@@ -167,7 +216,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/saveSettings:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_saveSettings_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":307,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":368,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/sendNow',
@@ -192,7 +241,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#SendEmailResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_sendNow_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":251,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":312,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/setPassword',
@@ -217,7 +266,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary#emailSummary/setPassword:result',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_setPassword_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":321,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":382,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-email-summary#emailSummary/status',
@@ -242,7 +291,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-email-summary/types#EmailStatusResult',
         schema: _deepseek_ai_dsh_email_summary_emailSummary_status_result$schema,
       },
-      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":279,"column":9},
+      sourceLocation: {"file":"packages/notification/email-summary/src/index.ts","line":340,"column":9},
     },
   ],
   model: {
@@ -296,6 +345,20 @@ export const TYPERT = {
             "signature": "@Remote('setPassword') async setPassword(request: { password: string }): Promise<{ ok: boolean; error?: string }>",
             "summary": "Store (or clear) the SMTP password through the credential seam.",
             "jsDoc": "/** Store (or clear) the SMTP password through the credential seam. */"
+          },
+          {
+            "kind": "method",
+            "name": "reportStatus",
+            "signature": "@Remote('reportStatus') reportStatus(): ReportStatusResult",
+            "summary": "Read the periodic-report scheduling state for the settings surface.",
+            "jsDoc": "/** Read the periodic-report scheduling state for the settings surface. */"
+          },
+          {
+            "kind": "method",
+            "name": "reportNow",
+            "signature": "@Remote('reportNow') async reportNow(): Promise<ReportRunResult>",
+            "summary": "Run the periodic report immediately (test button), reporting the outcome.",
+            "jsDoc": "/** Run the periodic report immediately (test button), reporting the outcome. */"
           }
         ],
         "types": [
@@ -334,6 +397,14 @@ export const TYPERT = {
           {
             "name": "EmailSummaryStyle",
             "declaration": "export type EmailSummaryStyle = 'brief' | 'detailed';"
+          },
+          {
+            "name": "ReportRunResult",
+            "declaration": "export interface ReportRunResult {\n    ok: boolean;\n    sent: boolean;\n    count: number;\n    subject: string;\n    error?: string;\n}"
+          },
+          {
+            "name": "ReportStatusResult",
+            "declaration": "export interface ReportStatusResult {\n    enabled: boolean;\n    frequency: string;\n    time: string;\n    weekday: number;\n    nextFireAt?: number;\n    last?: { at: number; ok: boolean; error?: string; };\n}"
           },
           {
             "name": "SendEmailRequest",

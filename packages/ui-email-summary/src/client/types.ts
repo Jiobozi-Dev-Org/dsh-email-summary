@@ -9,6 +9,8 @@ import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type {
   EmailProviderPreset,
   EmailSummarySettings,
+  ReportRunResult,
+  ReportStatusResult,
   SendEmailResult,
 } from '@deepseek-ai/dsh-email-summary/types'
 import type { EmailKey } from './locales.ts'
@@ -30,6 +32,8 @@ export interface EmailSummaryApi {
   getSettings(): Promise<{ settings: EmailSummarySettings; presets: EmailProviderPreset[]; configured: boolean; defaultPrompts: { brief: string; detailed: string } }>
   saveSettings(request: { patch: Partial<EmailSummarySettings> }): Promise<{ ok: boolean; error?: string }>
   setPassword(request: { password: string }): Promise<{ ok: boolean; error?: string }>
+  reportStatus(): Promise<ReportStatusResult>
+  reportNow(): Promise<ReportRunResult>
 }
 
 /** Injected face of one assistant-message "send email" action. */

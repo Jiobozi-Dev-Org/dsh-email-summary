@@ -40,6 +40,13 @@ export declare const zh: {
     'settings.reportTimeHint': string;
     'settings.reportWeekday': string;
     'settings.reportHint': string;
+    'settings.reportNext': string;
+    'settings.reportLastSent': string;
+    'settings.reportLastFailed': string;
+    'settings.reportNow': string;
+    'settings.reportNowPending': string;
+    'settings.reportNowSent': string;
+    'settings.reportNowFailed': string;
     'settings.weekdays': string;
     'settings.detailed': string;
     'settings.brief': string;
@@ -98,6 +105,13 @@ export declare const en: {
     'settings.reportTimeHint': string;
     'settings.reportWeekday': string;
     'settings.reportHint': string;
+    'settings.reportNext': string;
+    'settings.reportLastSent': string;
+    'settings.reportLastFailed': string;
+    'settings.reportNow': string;
+    'settings.reportNowPending': string;
+    'settings.reportNowSent': string;
+    'settings.reportNowFailed': string;
     'settings.weekdays': string;
     'settings.detailed': string;
     'settings.brief': string;

@@ -684,6 +684,16 @@ var __esDecorate = function(ctor, descriptorIn, decorators, contextIn, initializ
 };
 /** Environment-variable name for the SMTP password. */
 const SMTP_PASSWORD_ENV = "EMAIL_SMTP_PASSWORD";
+/** Human-readable duration for schedule logs (seconds/minutes/hours/days). */
+function formatDelay(ms) {
+	const seconds = Math.round(ms / 1e3);
+	if (seconds < 90) return `${seconds} 秒`;
+	const minutes = Math.round(seconds / 60);
+	if (minutes < 90) return `${minutes} 分钟`;
+	const hours = Math.round(minutes / 60);
+	if (hours < 48) return `${hours} 小时`;
+	return `${Math.round(hours / 24)} 天`;
+}
 /** Host service for conversation summarization + SMTP delivery. */
 let EmailSummaryService = (() => {
 	let _classSuper = TypertRemoteService;
@@ -694,6 +704,8 @@ let EmailSummaryService = (() => {
 	let _getSettings_decorators;
 	let _saveSettings_decorators;
 	let _setPassword_decorators;
+	let _reportStatus_decorators;
+	let _reportNow_decorators;
 	return class EmailSummaryService extends _classSuper {
 		static {
 			const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
@@ -703,6 +715,8 @@ let EmailSummaryService = (() => {
 			_getSettings_decorators = [Remote("getSettings")];
 			_saveSettings_decorators = [Remote("saveSettings")];
 			_setPassword_decorators = [Remote("setPassword")];
+			_reportStatus_decorators = [Remote("reportStatus")];
+			_reportNow_decorators = [Remote("reportNow")];
 			__esDecorate(this, null, _sendNow_decorators, {
 				kind: "method",
 				name: "sendNow",
@@ -769,6 +783,28 @@ let EmailSummaryService = (() => {
 				},
 				metadata: _metadata
 			}, null, _instanceExtraInitializers);
+			__esDecorate(this, null, _reportStatus_decorators, {
+				kind: "method",
+				name: "reportStatus",
+				static: false,
+				private: false,
+				access: {
+					has: (obj) => "reportStatus" in obj,
+					get: (obj) => obj.reportStatus
+				},
+				metadata: _metadata
+			}, null, _instanceExtraInitializers);
+			__esDecorate(this, null, _reportNow_decorators, {
+				kind: "method",
+				name: "reportNow",
+				static: false,
+				private: false,
+				access: {
+					has: (obj) => "reportNow" in obj,
+					get: (obj) => obj.reportNow
+				},
+				metadata: _metadata
+			}, null, _instanceExtraInitializers);
 			if (_metadata) Object.defineProperty(this, Symbol.metadata, {
 				enumerable: true,
 				configurable: true,
@@ -788,6 +824,8 @@ let EmailSummaryService = (() => {
 		armed = (__runInitializers(this, _instanceExtraInitializers), /* @__PURE__ */ new Map());
 		/** Disposer of the currently scheduled periodic report, when armed. */
 		reportTimer;
+		/** Most recent periodic-report outcome, for the settings surface and logs. */
+		lastReport;
 		/** The durable settings scope (structural type; matches `SettingsScope<T>`). */
 		settingsScope;
 		constructor(ctx) {
@@ -835,8 +873,24 @@ let EmailSummaryService = (() => {
 			const raw = this.settingsScope.get() ?? DEFAULT_EMAIL_SETTINGS;
 			if (!raw.reportEnabled) return;
 			const delay = msUntilNextReport(raw.reportFrequency, raw.reportTime, raw.reportWeekday);
+			this.ctx.logger.info("email-summary: 定时报告已排程，%s 后触发（%s %s）", formatDelay(delay), raw.reportFrequency, raw.reportTime);
 			this.reportTimer = this.ctx.timeout(() => {
-				this.sendReport().catch(() => {}).finally(() => {
+				this.sendReport().then((result) => {
+					this.lastReport = {
+						at: Date.now(),
+						ok: result.ok,
+						...result.error !== void 0 ? { error: result.error } : {}
+					};
+				}).catch((error) => {
+					const message = error instanceof Error ? error.message : String(error);
+					this.ctx.logger.warn("email-summary: 定时报告发送失败");
+					this.ctx.logger.warn(error);
+					this.lastReport = {
+						at: Date.now(),
+						ok: false,
+						error: message
+					};
+				}).finally(() => {
 					this.scheduleReport();
 				});
 			}, delay);
@@ -845,23 +899,71 @@ let EmailSummaryService = (() => {
 		async sendReport() {
 			const raw = this.settingsScope.get() ?? DEFAULT_EMAIL_SETTINGS;
 			const mail = await this.resolveMail();
-			if (mail.host === "" || mail.from === "" || mail.defaultRecipient === "") return;
 			const frequency = raw.reportFrequency === "weekly" ? "weekly" : "daily";
+			const dateLabel = formatChineseDate(/* @__PURE__ */ new Date());
+			const reportName = frequency === "weekly" ? "周报" : "日报";
+			if (mail.host === "" || mail.from === "" || mail.defaultRecipient === "") {
+				const reason = `定时报告未发送：请先配置${[
+					mail.host === "" ? "SMTP 主机" : null,
+					mail.from === "" ? "发件人邮箱" : null,
+					mail.defaultRecipient === "" ? "默认收件人" : null
+				].filter((item) => item !== null).join("、")}`;
+				this.ctx.logger.warn("email-summary: %s", reason);
+				return {
+					ok: false,
+					sent: false,
+					count: 0,
+					subject: "",
+					error: reason
+				};
+			}
 			const periodStart = reportPeriodStart(frequency, /* @__PURE__ */ new Date());
-			const recent = (await this.ctx.sessionQuery.listSessions()).filter((record) => (record.header?.createdAt ?? 0) >= periodStart).slice(-20);
-			if (recent.length === 0) return;
+			const recent = (await this.ctx.sessionQuery.listSessions()).filter((record) => (record.header?.createdAt ?? 0) >= periodStart).slice(0, 20);
+			if (recent.length === 0) {
+				const reason = "定时报告未发送：当天/本周没有新建的会话";
+				this.ctx.logger.info("email-summary: %s", reason);
+				return {
+					ok: false,
+					sent: false,
+					count: 0,
+					subject: "",
+					error: reason
+				};
+			}
 			const selection = this.ctx.agentDefaultModel.currentSelection();
-			if (selection === void 0 || selection.provider === "" || selection.model === "") return;
+			if (selection === void 0 || selection.provider === "" || selection.model === "") {
+				const reason = "定时报告未发送：无法解析可用的 LLM 模型（provider/model）";
+				this.ctx.logger.warn("email-summary: %s", reason);
+				return {
+					ok: false,
+					sent: false,
+					count: 0,
+					subject: "",
+					error: reason
+				};
+			}
 			const sections = [];
 			for (const record of recent) try {
 				const transcript = buildTranscript((await this.ctx.sessionQuery.readSurface(record.header.id)).events);
 				if (transcript.text.trim() === "") continue;
 				const summary = await generateSummary(this.ctx.llm, selection.provider, selection.model, capTranscript(transcript.text, 2e4), "brief");
 				sections.push(markdownToHtml(`## ${summary.title}\n\n${summary.markdown}`));
-			} catch {}
-			if (sections.length === 0) return;
-			const dateLabel = formatChineseDate(/* @__PURE__ */ new Date());
-			const reportName = frequency === "weekly" ? "周报" : "日报";
+			} catch (error) {
+				this.ctx.logger.warn("email-summary: 定时报告对会话 \"%s\" 总结失败", record.header.id);
+				this.ctx.logger.warn(error);
+			}
+			if (sections.length === 0) {
+				const reason = "定时报告未发送：没有可总结的对话内容";
+				this.ctx.logger.warn("email-summary: %s", reason);
+				return {
+					ok: false,
+					sent: false,
+					count: 0,
+					subject: "",
+					error: reason
+				};
+			}
+			const subject = `${dateLabel} dsh${reportName}`;
 			const html = buildEmailHtml(`${dateLabel} ${reportName}`, dateLabel, sections.join(""));
 			await sendSmtpMail({
 				host: mail.host,
@@ -871,9 +973,16 @@ let EmailSummaryService = (() => {
 				password: mail.password,
 				from: mail.from,
 				to: mail.defaultRecipient,
-				subject: `${dateLabel} dsh${reportName}`,
+				subject,
 				html
 			});
+			this.ctx.logger.info("email-summary: 定时报告已发送 %s（%d 个会话 → %s）", subject, sections.length, mail.defaultRecipient);
+			return {
+				ok: true,
+				sent: true,
+				count: sections.length,
+				subject
+			};
 		}
 		/** Summarize one session and send it; throws on failure. */
 		async summarizeAndSend(sessionId, recipient, subject, style) {
@@ -981,6 +1090,49 @@ let EmailSummaryService = (() => {
 				return {
 					ok: false,
 					error: error instanceof Error ? error.message : String(error)
+				};
+			}
+		}
+		/** Read the periodic-report scheduling state for the settings surface. */
+		reportStatus() {
+			const raw = this.settingsScope.get() ?? DEFAULT_EMAIL_SETTINGS;
+			const enabled = raw.reportEnabled === true;
+			const base = {
+				enabled,
+				frequency: raw.reportFrequency,
+				time: raw.reportTime,
+				weekday: raw.reportWeekday,
+				...this.lastReport !== void 0 ? { last: this.lastReport } : {}
+			};
+			if (!enabled) return base;
+			return {
+				...base,
+				nextFireAt: Date.now() + msUntilNextReport(raw.reportFrequency, raw.reportTime, raw.reportWeekday)
+			};
+		}
+		/** Run the periodic report immediately (test button), reporting the outcome. */
+		async reportNow() {
+			try {
+				const result = await this.sendReport();
+				this.lastReport = {
+					at: Date.now(),
+					ok: result.ok,
+					...result.error !== void 0 ? { error: result.error } : {}
+				};
+				return result;
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				this.lastReport = {
+					at: Date.now(),
+					ok: false,
+					error: message
+				};
+				return {
+					ok: false,
+					sent: false,
+					count: 0,
+					subject: "",
+					error: message
 				};
 			}
 		}

@@ -212,6 +212,28 @@ window.__ModuleLoader__.load({
 			});
 			const [saving, setSaving] = (0, react.useState)(false);
 			const [message, setMessage] = (0, react.useState)(null);
+			const [reportStatus, setReportStatus] = (0, react.useState)(null);
+			const [reporting, setReporting] = (0, react.useState)(false);
+			const [reportMessage, setReportMessage] = (0, react.useState)(null);
+			const refreshReportStatus = (0, react.useCallback)(() => {
+				api.reportStatus().then(setReportStatus);
+			}, [api]);
+			const onReportNow = (0, react.useCallback)(() => {
+				if (reporting) return;
+				setReporting(true);
+				setReportMessage(null);
+				api.reportNow().then((result) => {
+					setReporting(false);
+					if (result.ok) setReportMessage(`${t("settings.reportNowSent")}（${result.count} 个会话）`);
+					else setReportMessage(`${t("settings.reportNowFailed")}：${result.error ?? ""}`);
+					refreshReportStatus();
+				});
+			}, [
+				reporting,
+				api,
+				t,
+				refreshReportStatus
+			]);
 			(0, react.useEffect)(() => {
 				let alive = true;
 				api.getSettings().then((result) => {
@@ -224,10 +246,11 @@ window.__ModuleLoader__.load({
 						prompt: (result.settings.prompt ?? "").trim() !== "" ? result.settings.prompt : result.defaultPrompts[style]
 					});
 				});
+				refreshReportStatus();
 				return () => {
 					alive = false;
 				};
-			}, [api]);
+			}, [api, refreshReportStatus]);
 			const patch = (0, react.useCallback)((partial) => {
 				setSettings((current) => current === null ? current : {
 					...current,
@@ -281,6 +304,7 @@ window.__ModuleLoader__.load({
 					if (password !== "") await api.setPassword({ password });
 					setSaving(false);
 					setMessage(saved.ok ? t("settings.saved") : saved.error ?? t("settings.error"));
+					refreshReportStatus();
 				})();
 			}, [
 				settings,
@@ -288,7 +312,8 @@ window.__ModuleLoader__.load({
 				password,
 				defaultPrompts,
 				api,
-				t
+				t,
+				refreshReportStatus
 			]);
 			const discard = (0, react.useCallback)(() => {
 				if (saving) return;
@@ -302,8 +327,13 @@ window.__ModuleLoader__.load({
 					setPresets(result.presets);
 					setDefaultPrompts(result.defaultPrompts);
 					setPassword("");
+					refreshReportStatus();
 				});
-			}, [saving, api]);
+			}, [
+				saving,
+				api,
+				refreshReportStatus
+			]);
 			if (settings === null) return null;
 			return (0, react_jsx_runtime.jsxs)("li", {
 				className: open ? `${EmailCard_module_css_default.card} ${EmailCard_module_css_default.cardOpen}` : EmailCard_module_css_default.card,
@@ -591,7 +621,45 @@ window.__ModuleLoader__.load({
 											children: label
 										}, idx))
 									})]
-								})] })
+								})] }),
+								reportStatus !== null && (0, react_jsx_runtime.jsxs)("div", {
+									style: {
+										display: "flex",
+										flexDirection: "column",
+										gap: 4
+									},
+									children: [reportStatus.enabled && reportStatus.nextFireAt !== void 0 && (0, react_jsx_runtime.jsxs)("div", {
+										style: fieldHint,
+										children: [t("settings.reportNext"), new Date(reportStatus.nextFireAt).toLocaleString()]
+									}), reportStatus.last !== void 0 && (0, react_jsx_runtime.jsx)("div", {
+										style: reportStatus.last.ok ? fieldHint : {
+											...fieldHint,
+											color: "#dc2626"
+										},
+										children: reportStatus.last.ok ? `${t("settings.reportLastSent")}${new Date(reportStatus.last.at).toLocaleString()}` : `${t("settings.reportLastFailed")}${reportStatus.last.error ?? ""}`
+									})]
+								}),
+								(0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									onClick: onReportNow,
+									disabled: reporting,
+									style: {
+										padding: "4px 8px",
+										borderRadius: 6,
+										border: "1px solid rgba(0,0,0,0.15)",
+										background: "transparent",
+										color: "#2563eb",
+										fontSize: 12,
+										cursor: "pointer",
+										alignSelf: "flex-start"
+									},
+									children: reporting ? t("settings.reportNowPending") : t("settings.reportNow")
+								}),
+								reportMessage !== null && (0, react_jsx_runtime.jsx)("div", {
+									role: "status",
+									style: fieldHint,
+									children: reportMessage
+								})
 							]
 						}),
 						(0, react_jsx_runtime.jsxs)("div", {
@@ -666,6 +734,13 @@ window.__ModuleLoader__.load({
 			"settings.reportTimeHint": "24 小时制，如 09:00",
 			"settings.reportWeekday": "周几",
 			"settings.reportHint": "到点自动汇总当天/本周新建的会话，发给默认收件人",
+			"settings.reportNext": "下次发送：",
+			"settings.reportLastSent": "上次已发送：",
+			"settings.reportLastFailed": "上次失败：",
+			"settings.reportNow": "立即发送一次",
+			"settings.reportNowPending": "发送中…",
+			"settings.reportNowSent": "已发送",
+			"settings.reportNowFailed": "发送失败",
 			"settings.weekdays": "周日,周一,周二,周三,周四,周五,周六",
 			"settings.detailed": "详细",
 			"settings.brief": "简短",
@@ -716,6 +791,13 @@ window.__ModuleLoader__.load({
 			"settings.reportTimeHint": "24h, e.g. 09:00",
 			"settings.reportWeekday": "Weekday",
 			"settings.reportHint": "Automatically summarize sessions created today / this week and email the default recipient",
+			"settings.reportNext": "Next send: ",
+			"settings.reportLastSent": "Last sent: ",
+			"settings.reportLastFailed": "Last failed: ",
+			"settings.reportNow": "Send now",
+			"settings.reportNowPending": "Sending…",
+			"settings.reportNowSent": "Sent",
+			"settings.reportNowFailed": "Send failed",
 			"settings.weekdays": "Sun,Mon,Tue,Wed,Thu,Fri,Sat",
 			"settings.detailed": "Detailed",
 			"settings.brief": "Brief",
@@ -790,6 +872,19 @@ window.__ModuleLoader__.load({
 				}),
 				setPassword: (request) => remote.setPassword(request).then((result) => result.ok ? result.value : {
 					ok: false,
+					error: errorText(result.error)
+				}),
+				reportStatus: () => remote.reportStatus().then((result) => result.ok ? result.value : {
+					enabled: false,
+					frequency: "daily",
+					time: "09:00",
+					weekday: 1
+				}),
+				reportNow: () => remote.reportNow().then((result) => result.ok ? result.value : {
+					ok: false,
+					sent: false,
+					count: 0,
+					subject: "",
 					error: errorText(result.error)
 				})
 			};
