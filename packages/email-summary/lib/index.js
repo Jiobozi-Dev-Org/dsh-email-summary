@@ -592,6 +592,51 @@ function buildEmailHtml(title, dateLabel, bodyHtml) {
 	].join("");
 }
 //#endregion
+//#region lib/types/report.js
+/**
+* Pure time/schedule helpers for the periodic report.
+* @module @deepseek-ai/dsh-email-summary/src/report
+*/
+/** Format a Date as `YY年M月D日` (e.g. `26年8月26日`). */
+function formatChineseDate(date) {
+	return `${String(date.getFullYear() % 100)}年${String(date.getMonth() + 1)}月${String(date.getDate())}日`;
+}
+/** Parse `HH:MM` into hours/minutes (defaults to 09:00). */
+function parseReportTime(time) {
+	const match = /^(\d{1,2}):(\d{2})$/.exec(time.trim());
+	if (match === null) return {
+		hour: 9,
+		minute: 0
+	};
+	return {
+		hour: Number(match[1]),
+		minute: Number(match[2])
+	};
+}
+/** Milliseconds until the next periodic-report occurrence. */
+function msUntilNextReport(frequency, time, weekday, now = /* @__PURE__ */ new Date()) {
+	const { hour, minute } = parseReportTime(time);
+	const next = new Date(now);
+	next.setHours(hour, minute, 0, 0);
+	if (frequency === "weekly") {
+		let daysAhead = (Math.max(0, Math.min(6, weekday)) - next.getDay() + 7) % 7;
+		if (daysAhead === 0 && next.getTime() <= now.getTime()) daysAhead = 7;
+		next.setDate(next.getDate() + daysAhead);
+	}
+	if (next.getTime() <= now.getTime()) next.setDate(next.getDate() + (frequency === "weekly" ? 7 : 1));
+	return Math.max(0, next.getTime() - now.getTime());
+}
+/** Start-of-period timestamp: today 00:00, or Monday 00:00 for weekly. */
+function reportPeriodStart(frequency, now) {
+	const start = new Date(now);
+	start.setHours(0, 0, 0, 0);
+	if (frequency === "weekly") {
+		const sinceMonday = (start.getDay() + 6) % 7;
+		start.setDate(start.getDate() - sinceMonday);
+	}
+	return start.getTime();
+}
+//#endregion
 //#region lib/types/index.js
 /**
 * Host service: summarize a conversation and email it over SMTP, with a
@@ -639,46 +684,6 @@ var __esDecorate = function(ctor, descriptorIn, decorators, contextIn, initializ
 };
 /** Environment-variable name for the SMTP password. */
 const SMTP_PASSWORD_ENV = "EMAIL_SMTP_PASSWORD";
-/** Format a Date as `YY年M月D日` (e.g. `26年8月26日`). */
-function formatChineseDate(date) {
-	return `${String(date.getFullYear() % 100)}年${String(date.getMonth() + 1)}月${String(date.getDate())}日`;
-}
-/** Parse `HH:MM` into hours/minutes (defaults to 09:00). */
-function parseReportTime(time) {
-	const match = /^(\d{1,2}):(\d{2})$/.exec(time.trim());
-	if (match === null) return {
-		hour: 9,
-		minute: 0
-	};
-	return {
-		hour: Number(match[1]),
-		minute: Number(match[2])
-	};
-}
-/** Milliseconds until the next periodic-report occurrence. */
-function msUntilNextReport(frequency, time, weekday) {
-	const now = /* @__PURE__ */ new Date();
-	const { hour, minute } = parseReportTime(time);
-	const next = new Date(now);
-	next.setHours(hour, minute, 0, 0);
-	if (frequency === "weekly") {
-		let daysAhead = (Math.max(0, Math.min(6, weekday)) - next.getDay() + 7) % 7;
-		if (daysAhead === 0 && next.getTime() <= now.getTime()) daysAhead = 7;
-		next.setDate(next.getDate() + daysAhead);
-	}
-	if (next.getTime() <= now.getTime()) next.setDate(next.getDate() + (frequency === "weekly" ? 7 : 1));
-	return Math.max(0, next.getTime() - now.getTime());
-}
-/** Start-of-period timestamp: today 00:00, or Monday 00:00 for weekly. */
-function reportPeriodStart(frequency, now) {
-	const start = new Date(now);
-	start.setHours(0, 0, 0, 0);
-	if (frequency === "weekly") {
-		const sinceMonday = (start.getDay() + 6) % 7;
-		start.setDate(start.getDate() - sinceMonday);
-	}
-	return start.getTime();
-}
 /** Host service for conversation summarization + SMTP delivery. */
 let EmailSummaryService = (() => {
 	let _classSuper = TypertRemoteService;
