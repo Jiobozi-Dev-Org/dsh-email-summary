@@ -19,10 +19,10 @@ const fieldLabel: CSSProperties = { fontSize: 13, fontWeight: 500 }
 const fieldHint: CSSProperties = { fontSize: 11, opacity: 0.55 }
 const input: CSSProperties = {
   padding: '8px 10px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.18)',
-  fontSize: 14, background: '#fff', width: '100%',
+  fontSize: 14, background: '#fff', width: '100%', boxSizing: 'border-box',
 }
-const inlineRow: CSSProperties = { display: 'flex', gap: 14 }
-const inlineCol: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }
+const inlineRow: CSSProperties = { display: 'flex', gap: 14, minWidth: 0 }
+const inlineCol: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 0 }
 
 /** A section header: the SMTP fields or the summary preference. */
 function FieldGroup({ label, children }: { label: string; children: ReactNode }) {

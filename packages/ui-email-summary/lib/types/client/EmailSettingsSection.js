@@ -13,10 +13,10 @@ const fieldLabel = { fontSize: 13, fontWeight: 500 };
 const fieldHint = { fontSize: 11, opacity: 0.55 };
 const input = {
     padding: '8px 10px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.18)',
-    fontSize: 14, background: '#fff', width: '100%',
+    fontSize: 14, background: '#fff', width: '100%', boxSizing: 'border-box',
 };
-const inlineRow = { display: 'flex', gap: 14 };
-const inlineCol = { display: 'flex', flexDirection: 'column', gap: 4, flex: 1 };
+const inlineRow = { display: 'flex', gap: 14, minWidth: 0 };
+const inlineCol = { display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 0 };
 /** A section header: the SMTP fields or the summary preference. */
 function FieldGroup({ label, children }) {
     return (_jsxs("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 }, children: [_jsx("div", { style: groupLabel, children: label }), children] }));

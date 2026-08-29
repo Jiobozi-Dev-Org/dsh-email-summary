@@ -119,7 +119,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:D:\public\deepseek-harness\packages\client\ui-email-summary\src\client\EmailCard.module.css.mjs
-		const css = ".NRWTCa_card{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);border-radius:12px;margin:0;padding:0;list-style:none;transition:border-color .16s,background .16s}.NRWTCa_card:hover{border-color:var(--dsw-alias-label-dimmed)}.NRWTCa_cardOpen{background:var(--dsw-alias-bg-layer-2);border-color:var(--dsw-alias-label-dimmed)}.NRWTCa_header{appearance:none;width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer;background:0 0;border:0;border-radius:12px;align-items:center;gap:12px;padding:14px 16px;display:flex}.NRWTCa_header:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}.NRWTCa_headText{flex-direction:column;flex:1;gap:4px;min-width:0;display:flex}.NRWTCa_name{color:var(--dsw-alias-label-primary);font-size:15px;font-weight:600;line-height:1.4}.NRWTCa_description{color:var(--dsw-alias-label-tertiary);font-size:13px;line-height:1.5}.NRWTCa_chevron{color:var(--dsw-alias-label-tertiary);flex:none;transition:transform .16s}.NRWTCa_chevronOpen{transform:rotate(180deg)}.NRWTCa_body{border-top:1px solid var(--dsw-alias-border-l2);flex-direction:column;gap:14px;max-width:560px;margin:0 16px;padding:16px 0 8px;display:flex}.NRWTCa_footer{border-top:1px solid var(--dsw-alias-border-l2);justify-content:flex-end;align-items:center;gap:8px;padding:12px 0 4px;display:flex}.NRWTCa_failed{min-width:0;color:var(--dsw-alias-label-error);flex:1;margin:0;font-size:12px;line-height:1.5}.NRWTCa_discard,.NRWTCa_save{appearance:none;font:inherit;cursor:pointer;border:1px solid #0000;border-radius:8px;padding:5px 14px;font-size:13px;line-height:1.5}.NRWTCa_discard{border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);background:0 0}.NRWTCa_discard:hover:not(:disabled){color:var(--dsw-alias-label-primary);border-color:var(--dsw-alias-label-dimmed)}.NRWTCa_save{background:var(--dsw-alias-label-primary);color:var(--dsw-alias-bg-layer-3)}.NRWTCa_discard:disabled,.NRWTCa_save:disabled{opacity:.4;cursor:default}";
+		const css = ".NRWTCa_card{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-3);border-radius:12px;min-width:0;margin:0;padding:0;list-style:none;transition:border-color .16s,background .16s}.NRWTCa_card:hover{border-color:var(--dsw-alias-label-dimmed)}.NRWTCa_cardOpen{background:var(--dsw-alias-bg-layer-2);border-color:var(--dsw-alias-label-dimmed)}.NRWTCa_header{appearance:none;width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer;background:0 0;border:0;border-radius:12px;align-items:center;gap:12px;padding:14px 16px;display:flex}.NRWTCa_header:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}.NRWTCa_headText{flex-direction:column;flex:1;gap:4px;min-width:0;display:flex}.NRWTCa_name{color:var(--dsw-alias-label-primary);font-size:15px;font-weight:600;line-height:1.4}.NRWTCa_description{color:var(--dsw-alias-label-tertiary);font-size:13px;line-height:1.5}.NRWTCa_chevron{color:var(--dsw-alias-label-tertiary);flex:none;transition:transform .16s}.NRWTCa_chevronOpen{transform:rotate(180deg)}.NRWTCa_body{border-top:1px solid var(--dsw-alias-border-l2);flex-direction:column;gap:14px;min-width:0;max-width:560px;margin:0 16px;padding:16px 0 8px;display:flex}.NRWTCa_footer{border-top:1px solid var(--dsw-alias-border-l2);justify-content:flex-end;align-items:center;gap:8px;padding:12px 0 4px;display:flex}.NRWTCa_failed{min-width:0;color:var(--dsw-alias-label-error);flex:1;margin:0;font-size:12px;line-height:1.5}.NRWTCa_discard,.NRWTCa_save{appearance:none;font:inherit;cursor:pointer;border:1px solid #0000;border-radius:8px;padding:5px 14px;font-size:13px;line-height:1.5}.NRWTCa_discard{border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);background:0 0}.NRWTCa_discard:hover:not(:disabled){color:var(--dsw-alias-label-primary);border-color:var(--dsw-alias-label-dimmed)}.NRWTCa_save{background:var(--dsw-alias-label-primary);color:var(--dsw-alias-bg-layer-3)}.NRWTCa_discard:disabled,.NRWTCa_save:disabled{opacity:.4;cursor:default}";
 		const tagId = "@deepseek-ai/dsh-client-ui-email-summary/EmailCard.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -171,17 +171,20 @@ window.__ModuleLoader__.load({
 			border: "1px solid rgba(0,0,0,0.18)",
 			fontSize: 14,
 			background: "#fff",
-			width: "100%"
+			width: "100%",
+			boxSizing: "border-box"
 		};
 		const inlineRow = {
 			display: "flex",
-			gap: 14
+			gap: 14,
+			minWidth: 0
 		};
 		const inlineCol = {
 			display: "flex",
 			flexDirection: "column",
 			gap: 4,
-			flex: 1
+			flex: 1,
+			minWidth: 0
 		};
 		/** A section header: the SMTP fields or the summary preference. */
 		function FieldGroup({ label, children }) {
