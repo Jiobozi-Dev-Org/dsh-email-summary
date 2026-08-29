@@ -20,6 +20,10 @@ export const DEFAULT_EMAIL_SETTINGS: EmailSummarySettings = {
   defaultRecipient: '',
   style: 'detailed',
   prompt: '',
+  reportEnabled: false,
+  reportFrequency: 'daily',
+  reportTime: '09:00',
+  reportWeekday: 1,
 }
 
 /** Settings schema (strings/numbers only; enums validated at read time). */
@@ -33,6 +37,10 @@ export const EmailSummarySettingsSchema: z<EmailSummarySettings> = z.object({
   defaultRecipient: z.string(),
   style: z.string(),
   prompt: z.string(),
+  reportEnabled: z.boolean(),
+  reportFrequency: z.string(),
+  reportTime: z.string(),
+  reportWeekday: z.number(),
 })
 
 /** SMTP provider presets: Gmail / QQ / 163 / 126 / Outlook + custom. */

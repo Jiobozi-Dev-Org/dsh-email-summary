@@ -20,11 +20,17 @@ export declare class EmailSummaryService extends TypertRemoteService {
     static inject: string[];
     /** Session ids currently armed for auto-send, with an optional recipient override. */
     private readonly armed;
+    /** Disposer of the currently scheduled periodic report, when armed. */
+    private reportTimer;
     /** The durable settings scope (structural type; matches `SettingsScope<T>`). */
     private readonly settingsScope;
     constructor(ctx: Context);
     /** Resolve effective mail configuration from settings + the credential password. */
     private resolveMail;
+    /** (Re)schedule the periodic report timer from the current settings. */
+    private scheduleReport;
+    /** Summarize the sessions created in the current period and email the report. */
+    private sendReport;
     /** Summarize one session and send it; throws on failure. */
     private summarizeAndSend;
     /** Summarize the current conversation and email it now. */

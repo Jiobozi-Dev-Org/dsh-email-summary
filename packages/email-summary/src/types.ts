@@ -54,6 +54,14 @@ export interface EmailSummarySettings {
   style: string
   /** Custom system prompt for the summarizer; empty uses the style default. */
   prompt: string
+  /** Whether the periodic (daily/weekly) report is enabled. */
+  reportEnabled: boolean
+  /** Periodic report frequency: `daily` or `weekly`. */
+  reportFrequency: string
+  /** Send time in `HH:MM` (24h). */
+  reportTime: string
+  /** For weekly reports: 0 (Sunday) … 6 (Saturday). */
+  reportWeekday: number
 }
 
 /** Send-one-summary request from the Client. */

@@ -54,6 +54,41 @@ function formatChineseDate(date) {
     const day = String(date.getDate());
     return `${year}年${month}月${day}日`;
 }
+/** Parse `HH:MM` into hours/minutes (defaults to 09:00). */
+function parseReportTime(time) {
+    const match = /^(\d{1,2}):(\d{2})$/.exec(time.trim());
+    if (match === null)
+        return { hour: 9, minute: 0 };
+    return { hour: Number(match[1]), minute: Number(match[2]) };
+}
+/** Milliseconds until the next periodic-report occurrence. */
+function msUntilNextReport(frequency, time, weekday) {
+    const now = new Date();
+    const { hour, minute } = parseReportTime(time);
+    const next = new Date(now);
+    next.setHours(hour, minute, 0, 0);
+    if (frequency === 'weekly') {
+        const target = Math.max(0, Math.min(6, weekday));
+        let daysAhead = (target - next.getDay() + 7) % 7;
+        if (daysAhead === 0 && next.getTime() <= now.getTime())
+            daysAhead = 7;
+        next.setDate(next.getDate() + daysAhead);
+    }
+    if (next.getTime() <= now.getTime()) {
+        next.setDate(next.getDate() + (frequency === 'weekly' ? 7 : 1));
+    }
+    return Math.max(0, next.getTime() - now.getTime());
+}
+/** Start-of-period timestamp: today 00:00, or Monday 00:00 for weekly. */
+function reportPeriodStart(frequency, now) {
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    if (frequency === 'weekly') {
+        const sinceMonday = (start.getDay() + 6) % 7;
+        start.setDate(start.getDate() - sinceMonday);
+    }
+    return start.getTime();
+}
 /** Host service for conversation summarization + SMTP delivery. */
 let EmailSummaryService = (() => {
     let _classSuper = TypertRemoteService;
@@ -81,9 +116,11 @@ let EmailSummaryService = (() => {
             __esDecorate(this, null, _setPassword_decorators, { kind: "method", name: "setPassword", static: false, private: false, access: { has: obj => "setPassword" in obj, get: obj => obj.setPassword }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
         }
-        static inject = ['llm', 'sessionQuery', 'settings', 'credentials', 'agentDefaultModel'];
+        static inject = ['llm', 'sessionQuery', 'settings', 'credentials', 'agentDefaultModel', 'timer'];
         /** Session ids currently armed for auto-send, with an optional recipient override. */
         armed = (__runInitializers(this, _instanceExtraInitializers), new Map());
+        /** Disposer of the currently scheduled periodic report, when armed. */
+        reportTimer;
         /** The durable settings scope (structural type; matches `SettingsScope<T>`). */
         settingsScope;
         constructor(ctx) {
@@ -99,6 +136,11 @@ let EmailSummaryService = (() => {
                 void this.summarizeAndSend(payload.agent.id, recipient, undefined, undefined).catch(() => {
                     // Auto-send failures are non-fatal to the agent turn; the button path reports errors.
                 });
+            });
+            this.scheduleReport();
+            ctx.on('settings/updated', (ns) => {
+                if (ns === settingsNamespace(EMAIL_SUMMARY_SETTINGS_NAMESPACE))
+                    this.scheduleReport();
             });
         }
         /** Resolve effective mail configuration from settings + the credential password. */
@@ -122,6 +164,66 @@ let EmailSummaryService = (() => {
                 defaultRecipient: raw.defaultRecipient,
                 prompt: raw.prompt,
             };
+        }
+        /** (Re)schedule the periodic report timer from the current settings. */
+        scheduleReport() {
+            if (this.reportTimer !== undefined) {
+                this.reportTimer();
+                this.reportTimer = undefined;
+            }
+            const raw = this.settingsScope.get() ?? DEFAULT_EMAIL_SETTINGS;
+            if (!raw.reportEnabled)
+                return;
+            const delay = msUntilNextReport(raw.reportFrequency, raw.reportTime, raw.reportWeekday);
+            this.reportTimer = this.ctx.timeout(() => {
+                void this.sendReport().catch(() => { }).finally(() => { this.scheduleReport(); });
+            }, delay);
+        }
+        /** Summarize the sessions created in the current period and email the report. */
+        async sendReport() {
+            const raw = this.settingsScope.get() ?? DEFAULT_EMAIL_SETTINGS;
+            const mail = await this.resolveMail();
+            if (mail.host === '' || mail.from === '' || mail.defaultRecipient === '')
+                return;
+            const frequency = raw.reportFrequency === 'weekly' ? 'weekly' : 'daily';
+            const periodStart = reportPeriodStart(frequency, new Date());
+            const records = await this.ctx.sessionQuery.listSessions();
+            const recent = records
+                .filter(record => (record.header?.createdAt ?? 0) >= periodStart)
+                .slice(-20);
+            if (recent.length === 0)
+                return;
+            const selection = this.ctx.agentDefaultModel.currentSelection();
+            if (selection === undefined || selection.provider === '' || selection.model === '')
+                return;
+            const sections = [];
+            for (const record of recent) {
+                try {
+                    const surface = await this.ctx.sessionQuery.readSurface(record.header.id);
+                    const transcript = buildTranscript(surface.events);
+                    if (transcript.text.trim() === '')
+                        continue;
+                    const summary = await generateSummary(this.ctx.llm, selection.provider, selection.model, capTranscript(transcript.text, 20000), 'brief');
+                    sections.push(markdownToHtml(`## ${summary.title}\n\n${summary.markdown}`));
+                }
+                catch { /* one session failing must not fail the whole report */ }
+            }
+            if (sections.length === 0)
+                return;
+            const dateLabel = formatChineseDate(new Date());
+            const reportName = frequency === 'weekly' ? '周报' : '日报';
+            const html = buildEmailHtml(`${dateLabel} ${reportName}`, dateLabel, sections.join(''));
+            await sendSmtpMail({
+                host: mail.host,
+                port: mail.port,
+                secure: mail.secure,
+                username: mail.username,
+                password: mail.password,
+                from: mail.from,
+                to: mail.defaultRecipient,
+                subject: `${dateLabel} dsh${reportName}`,
+                html,
+            });
         }
         /** Summarize one session and send it; throws on failure. */
         async summarizeAndSend(sessionId, recipient, subject, style) {

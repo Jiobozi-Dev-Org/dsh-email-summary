@@ -247,6 +247,59 @@ export function EmailSettingsSection({ api, t }: EmailSettingsSectionProps) {
             </button>
           </FieldGroup>
 
+          <FieldGroup label={t('settings.report')}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={settings.reportEnabled}
+                onChange={event => patch({ reportEnabled: event.target.checked })}
+              />
+              <span style={fieldLabel}>{t('settings.reportEnabled')}</span>
+            </label>
+            <div style={fieldHint}>{t('settings.reportHint')}</div>
+            {settings.reportEnabled && (
+              <>
+                <div style={inlineRow}>
+                  <label style={inlineCol}>
+                    <span style={fieldLabel}>{t('settings.reportFrequency')}</span>
+                    <select
+                      style={input}
+                      value={settings.reportFrequency}
+                      onChange={event => patch({ reportFrequency: event.target.value })}
+                    >
+                      <option value="daily">{t('settings.daily')}</option>
+                      <option value="weekly">{t('settings.weekly')}</option>
+                    </select>
+                  </label>
+                  <label style={inlineCol}>
+                    <span style={fieldLabel}>{t('settings.reportTime')}</span>
+                    <input
+                      style={input}
+                      value={settings.reportTime}
+                      placeholder="09:00"
+                      onChange={event => patch({ reportTime: event.target.value })}
+                    />
+                    <span style={fieldHint}>{t('settings.reportTimeHint')}</span>
+                  </label>
+                </div>
+                {settings.reportFrequency === 'weekly' && (
+                  <label style={inlineCol}>
+                    <span style={fieldLabel}>{t('settings.reportWeekday')}</span>
+                    <select
+                      style={input}
+                      value={settings.reportWeekday}
+                      onChange={event => patch({ reportWeekday: Number(event.target.value) })}
+                    >
+                      {t('settings.weekdays').split(',').map((label, idx) => (
+                        <option key={idx} value={idx}>{label}</option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </>
+            )}
+          </FieldGroup>
+
           <div className={css.footer}>
             {message !== null && <span className={css.failed} role="status">{message}</span>}
             <button type="button" className={css.discard} onClick={discard} disabled={saving}>

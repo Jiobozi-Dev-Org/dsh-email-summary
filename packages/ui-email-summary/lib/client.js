@@ -517,6 +517,83 @@ window.__ModuleLoader__.load({
 								})
 							]
 						}),
+						(0, react_jsx_runtime.jsxs)(FieldGroup, {
+							label: t("settings.report"),
+							children: [
+								(0, react_jsx_runtime.jsxs)("label", {
+									style: {
+										display: "flex",
+										alignItems: "center",
+										gap: 8
+									},
+									children: [(0, react_jsx_runtime.jsx)("input", {
+										type: "checkbox",
+										checked: settings.reportEnabled,
+										onChange: (event) => patch({ reportEnabled: event.target.checked })
+									}), (0, react_jsx_runtime.jsx)("span", {
+										style: fieldLabel,
+										children: t("settings.reportEnabled")
+									})]
+								}),
+								(0, react_jsx_runtime.jsx)("div", {
+									style: fieldHint,
+									children: t("settings.reportHint")
+								}),
+								settings.reportEnabled && (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsxs)("div", {
+									style: inlineRow,
+									children: [(0, react_jsx_runtime.jsxs)("label", {
+										style: inlineCol,
+										children: [(0, react_jsx_runtime.jsx)("span", {
+											style: fieldLabel,
+											children: t("settings.reportFrequency")
+										}), (0, react_jsx_runtime.jsxs)("select", {
+											style: input,
+											value: settings.reportFrequency,
+											onChange: (event) => patch({ reportFrequency: event.target.value }),
+											children: [(0, react_jsx_runtime.jsx)("option", {
+												value: "daily",
+												children: t("settings.daily")
+											}), (0, react_jsx_runtime.jsx)("option", {
+												value: "weekly",
+												children: t("settings.weekly")
+											})]
+										})]
+									}), (0, react_jsx_runtime.jsxs)("label", {
+										style: inlineCol,
+										children: [
+											(0, react_jsx_runtime.jsx)("span", {
+												style: fieldLabel,
+												children: t("settings.reportTime")
+											}),
+											(0, react_jsx_runtime.jsx)("input", {
+												style: input,
+												value: settings.reportTime,
+												placeholder: "09:00",
+												onChange: (event) => patch({ reportTime: event.target.value })
+											}),
+											(0, react_jsx_runtime.jsx)("span", {
+												style: fieldHint,
+												children: t("settings.reportTimeHint")
+											})
+										]
+									})]
+								}), settings.reportFrequency === "weekly" && (0, react_jsx_runtime.jsxs)("label", {
+									style: inlineCol,
+									children: [(0, react_jsx_runtime.jsx)("span", {
+										style: fieldLabel,
+										children: t("settings.reportWeekday")
+									}), (0, react_jsx_runtime.jsx)("select", {
+										style: input,
+										value: settings.reportWeekday,
+										onChange: (event) => patch({ reportWeekday: Number(event.target.value) }),
+										children: t("settings.weekdays").split(",").map((label, idx) => (0, react_jsx_runtime.jsx)("option", {
+											value: idx,
+											children: label
+										}, idx))
+									})]
+								})] })
+							]
+						}),
 						(0, react_jsx_runtime.jsxs)("div", {
 							className: EmailCard_module_css_default.footer,
 							children: [
@@ -580,6 +657,16 @@ window.__ModuleLoader__.load({
 			"settings.promptPlaceholder": "自定义提示词",
 			"settings.promptHint": "已预填所选样式的默认提示词；改它并保存即成为自定义；点「恢复默认」回到内置默认",
 			"settings.restoreDefaultPrompt": "恢复默认提示词",
+			"settings.report": "定时发送",
+			"settings.reportEnabled": "开启定时日报 / 周报",
+			"settings.reportFrequency": "频率",
+			"settings.daily": "日报（每天）",
+			"settings.weekly": "周报（每周）",
+			"settings.reportTime": "发送时间",
+			"settings.reportTimeHint": "24 小时制，如 09:00",
+			"settings.reportWeekday": "周几",
+			"settings.reportHint": "到点自动汇总当天/本周新建的会话，发给默认收件人",
+			"settings.weekdays": "周日,周一,周二,周三,周四,周五,周六",
 			"settings.detailed": "详细",
 			"settings.brief": "简短",
 			"settings.save": "保存",
@@ -620,6 +707,16 @@ window.__ModuleLoader__.load({
 			"settings.promptPlaceholder": "Custom prompt",
 			"settings.promptHint": "The default for the selected style is pre-filled; edit and save to customize, or click \"Restore default\" to revert",
 			"settings.restoreDefaultPrompt": "Restore default prompt",
+			"settings.report": "Scheduled report",
+			"settings.reportEnabled": "Enable daily / weekly report",
+			"settings.reportFrequency": "Frequency",
+			"settings.daily": "Daily",
+			"settings.weekly": "Weekly",
+			"settings.reportTime": "Send time",
+			"settings.reportTimeHint": "24h, e.g. 09:00",
+			"settings.reportWeekday": "Weekday",
+			"settings.reportHint": "Automatically summarize sessions created today / this week and email the default recipient",
+			"settings.weekdays": "Sun,Mon,Tue,Wed,Thu,Fri,Sat",
 			"settings.detailed": "Detailed",
 			"settings.brief": "Brief",
 			"settings.save": "Save",
